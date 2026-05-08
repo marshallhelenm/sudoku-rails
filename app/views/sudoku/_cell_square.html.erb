@@ -1,0 +1,22 @@
+<%# locals: (value:0, ci:0, cj:0, options:[] ) %>
+<% i_class = "ci-#{ci}" %>
+<% j_class = "cj-#{cj}" %>
+<%= turbo_frame_tag "cell_#{ci}_#{cj}" do %>
+    <div 
+        class="cell <%= i_class + " " + j_class%>" 
+        data-controller="cell" 
+        data-action="click->cell#toggleOptions" 
+        data-game-target="cell"
+        data-cell-target="cell"
+        data-value="<%= value %>"
+        >
+        <div data-cell-target="value" class="cell-value">
+            <%= value unless value == 0 %>
+        </div>
+        <div data-cell-target="options" class="d-none cell-options">
+            <% options.each do |opt| %>
+                <%= opt %>
+            <% end %>
+        </div>
+    </div>
+<% end %>

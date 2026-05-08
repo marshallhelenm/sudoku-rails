@@ -1,0 +1,12 @@
+<div class="puzzler-outer">
+    <h1 class="puzzler-title">Sudoku Puzzler</h1>
+    <div data-controller="game" class="puzzler-board-container">
+        <%= render "sudoku/game_board", puzzle: @puzzle %>
+        <div class="puzzler-controls">
+            <button data-action="click->game#toggleOptions" class="puzzler-btn puzzler-btn-primary">Show Options</button>
+            <button type="button" data-action="click->game#solve" class="puzzler-btn puzzler-btn-success">Solve it!</button>
+            <button type="button" data-action="click->game#newPuzzle" class="puzzler-btn puzzler-btn-warning">New Puzzle</button>
+        </div>
+        <%# TODO: Add loading spinner for new puzzle %>
+    </div>
+</div>

@@ -1,0 +1,140 @@
+/* Sudoku Puzzler Page Styles */
+.puzzler-outer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  justify-content: center;
+  background: #f8f9fa;
+}
+
+.puzzler-title {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #333;
+  letter-spacing: 2px;
+}
+
+.puzzler-board-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  padding: 2rem 3rem;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.puzzler-controls {
+  margin-left: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+.puzzler-btn {
+  padding: 0.7rem 2.2rem;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 0.5rem;
+}
+.puzzler-btn-primary {
+  background: #007bff;
+  color: white;
+}
+.puzzler-btn-success {
+  background: #28a745;
+  color: white;
+}
+.puzzler-btn-warning {
+  background: #ffc107;
+  color: #333;
+}
+
+/* Sudoku Board Styles */
+.board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  gap: 0px;
+  width: 450px;
+  height: 450px;
+}
+
+.cell {
+  width: 50px;
+  height: 50px;
+  border: solid 1px;
+  border-left: none;
+  border-top: none;
+  border-color: gray;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.cell-value {
+  font-size: 20px;
+}
+
+.cell-options {
+  padding: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  font-size: 10px;
+  color: rgb(67, 67, 186);
+}
+
+.cell.cj-2,
+.cell.cj-5 {
+  border-right: solid 2px;
+  border-color: black;
+}
+
+.cell.cj-3,
+.cell.cj-6 {
+  border-left: none;
+}
+
+.cell.ci-0 {
+  border-top: solid 2px;
+  border-color: black;
+}
+
+.cell.cj-0 {
+  border-left: solid 2px;
+  border-color: black;
+}
+
+.cell.cj-8 {
+  border-right: solid 2px;
+  border-color: black;
+}
+
+.cell.ci-8 {
+  border-bottom: solid 2px;
+  border-color: black;
+}
+
+.cell.ci-2,
+.cell.ci-5 {
+  border-bottom: solid 2px;
+  border-color: black;
+}
+
+.cell.ci-3,
+.cell.ci-6 {
+  border-top: none;
+}
+
+.d-none {
+  display: none;
+}
