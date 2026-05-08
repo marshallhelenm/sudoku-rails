@@ -1,2 +1,0 @@
-class Row < Line
-end

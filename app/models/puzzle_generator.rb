@@ -19,7 +19,7 @@ class PuzzleGenerator
         puzzles = []
         data = JSON.parse(PUZZLES)
         data.each do |puzzle_data|
-            puzzle = Game.new(values: Matrix[*puzzle_data])
+            puzzle = Puzzle.new(values: Matrix[*puzzle_data])
             puzzles << puzzle
         end
         puzzles
@@ -31,7 +31,7 @@ class PuzzleGenerator
             cells = matrix_data.map do |cell_value|
                 Cell.new(value: cell_value)
             end
-            PuzzleMatrix.new(values: Matrix[*cells])
+            Puzzle.new(values: Matrix[*cells])
         end
         @puzzle_matrices = data
     end
@@ -50,14 +50,14 @@ class PuzzleGenerator
         end
     end
 
-    def generate_puzzle_matrix
-        if completed_matrix = generate_completed_puzzle_matrix
-            if reduced_matrix = reduce_matrix(completed_matrix.duplicate, 40)
-                Game.new(values: reduced_matrix.cells).print_puzzle_information
+    def generate_puzzle
+        if completed_matrix = generate_completed_puzzle
+                if reduced_matrix = reduce_matrix(completed_matrix, 40)
+                Puzzle.new(values: reduced_matrix.cells).print_puzzle_information
                 reduced_matrix
-            else
+                else
                 false
-            end
+                end
         else
             false
         end
@@ -67,7 +67,7 @@ class PuzzleGenerator
         reset_counts
         attempts = 0
         until @puzzle_matrices.count == n || attempts == n*2 do
-            matrix = generate_puzzle_matrix
+            matrix = generate_puzzle
             if matrix
                 @puzzle_matrices << matrix
                 puts "#{@puzzle_matrices.count} matrices created"
@@ -87,16 +87,16 @@ class PuzzleGenerator
     def generate_puzzles(n)
         puts "Generating #{n} puzzles"
         generate_puzzle_matrices(n)
-        puzzles = @puzzle_matrices.map { |matrix| Game.new(values: matrix) }
+        puzzles = @puzzle_matrices.map { |matrix| Puzzle.new(values: matrix) }
         puts "Puzzles created!"
         puzzles
     end
 
-    def generate_completed_puzzle_matrix(print_completed: false)
+    def generate_completed_puzzle(print_completed: false)
         @completion_stuck = false
         puts "Building completed matrix"
-        @working_matrix = PuzzleMatrix.new
-        @working_puzzle = Game.new(values: @working_matrix)
+        @working_matrix = Puzzle.new
+        @working_puzzle = Puzzle.new(values: @working_matrix)
         arr = randomize(range)
         @working_matrix.row(0).cells.each do |cell|
             cell.value = arr.pop()
@@ -153,7 +153,7 @@ class PuzzleGenerator
         @stuck_reduction = false
         puts "reducing matrix"
         @working_matrix = matrix.duplicate
-        @working_puzzle = Game.new(values: @working_matrix)
+        @working_puzzle = Puzzle.new(values: @working_matrix)
         @reduced_matrix = nil
         n = 0
         value_count = @working_matrix.count_confirmed_values

@@ -14,14 +14,14 @@ class Cell
     OPTIONS_RANGE = Sudoku::OPTIONS_RANGE
     # Initialize a Cell with value, row (ci), column (cj), and options.
     # Raises ArgumentError if any attribute is invalid.
-    def initialize(value:, ci:, cj:, options: [])
+    def initialize(value:, ci:, cj:, options: fresh_options)
         self.value = value
         self.ci = ci # row index
         self.cj = cj # column index
         if options.present?
             self.options = options
         else
-            self.options = value == 0 ? OPTIONS_RANGE : []
+            self.options = value == 0 ? fresh_options : Set.new
         end
     end
 
@@ -56,11 +56,11 @@ class Cell
         @cj = val
     end
 
-    # Get the cell's options (possible values, array of unique integers 1-9)
+    # Get the cell's options (possible values, a set of unique integers 1-9)
     def options
         @options
     end
-    # Set the cell's options, must be array of unique integers 1-9
+    # Set the cell's options, must be a set of unique integers 1-9
     def options=(opts)
         validate_options(opts)
         @options = opts
@@ -96,21 +96,21 @@ class Cell
     # Reset the cell to empty and restore all options
     def reset
         self.value = 0
-        self.options = OPTIONS_RANGE
+        self.options = fresh_options
     end
 
     # Reset only the cell's options to full range
     def reset_options
-        self.options = OPTIONS_RANGE
+        self.options = fresh_options
     end
 
-    # Remove multiple options from the cell's options array
+    # Remove multiple options from the cell's options set
     def forbid_multiple(options_to_forbid)
         options_to_forbid.each { |opt| self.options.delete(opt) }
         self.options
     end
 
-    # Remove a single option from the cell's options array
+    # Remove a single option from the cell's options set
     def forbid(option_to_forbid)
         self.options.delete(option_to_forbid)
         self.options
@@ -134,7 +134,7 @@ class Cell
     # Evaluate and return possible options for this cell given the matrix.
     # If overwrite is true, update the cell's options.
     def evaluate_options(matrix, overwrite = false)
-        temp_options = OPTIONS_RANGE
+        temp_options = fresh_options
         siblings(matrix).each do |sibling|
             if sibling.value != 0
                 temp_options.delete(sibling.value)
@@ -157,26 +157,12 @@ class Cell
 
     # Returns the block row index for this cell (0-2)
     def block_i
-        case self.ci
-        when 0, 1, 2
-            0
-        when 3, 4, 5
-            1
-        when 6, 7, 8
-            2
-        end
+        self.ci / 3
     end
 
     # Returns the block column index for this cell (0-2)
     def block_j
-        case self.cj
-        when 0, 1, 2
-            0
-        when 3, 4, 5
-            1
-        when 6, 7, 8
-            2
-        end
+        self.cj / 3
     end
 
     # Returns the block coordinates as [row, col]
@@ -186,21 +172,25 @@ class Cell
 
     private
 
+    def fresh_options
+        Set.new(OPTIONS_RANGE.dup)
+    end
+
     def validate_value(val)
         unless val.is_a?(Integer) && VALUE_RANGE.include?(val)
-            raise ArgumentError, "value must be an integer between \\#{VALUE_RANGE.first} and \\#{VALUE_RANGE.last}"
+            raise ArgumentError, "value must be an integer between #{VALUE_RANGE.first} and #{VALUE_RANGE.last}"
         end
     end
 
     def validate_index(val, name)
         unless val.is_a?(Integer) && VALUE_RANGE.include?(val)
-            raise ArgumentError, "#{name} must be an integer between \\#{VALUE_RANGE.first} and \\#{VALUE_RANGE.last}"
+            raise ArgumentError, "#{name} must be an integer between #{VALUE_RANGE.first} and #{VALUE_RANGE.last}"
         end
     end
 
     def validate_options(opts)
-        unless opts.is_a?(Array) && opts.uniq.length == opts.length && opts.all? { |o| o.is_a?(Integer) && OPTIONS_RANGE.include?(o) }
-            raise ArgumentError, "options must be an array of unique integers between \\#{OPTIONS_RANGE.first} and \\#{OPTIONS_RANGE.last}"
+        unless opts.is_a?(Set) && opts.all? { |o| o.is_a?(Integer) && OPTIONS_RANGE.include?(o) }
+            raise ArgumentError, "options must be a set of unique integers between #{OPTIONS_RANGE.first} and #{OPTIONS_RANGE.last}"
         end
     end
 end

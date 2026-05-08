@@ -2,7 +2,7 @@
 
 require "minitest/autorun"
 require_relative "../../app/models/block"
-require_relative "../../app/models/puzzle_matrix"
+require_relative "../../app/models/puzzle"
 require_relative "../../app/models/cell"
 
 class BlockTest < Minitest::Test
@@ -13,7 +13,7 @@ class BlockTest < Minitest::Test
         Cell.new(value: ((i * 9 + j) % 10), ci: i, cj: j, options: (1..9).to_a)
       end
     end
-    @puzzle = PuzzleMatrix.new
+    @puzzle = Puzzle.new
   end
 
   def test_initialize_valid
@@ -24,7 +24,7 @@ class BlockTest < Minitest::Test
   end
 
   def test_initialize_invalid_puzzle
-    assert_raises(ArgumentError, "Should raise error for non-PuzzleMatrix puzzle") { Block.new("not_a_puzzle", 0, 0) }
+    assert_raises(ArgumentError, "Should raise error for non-Puzzle puzzle") { Block.new("not_a_puzzle", 0, 0) }
     bad_puzzle = Object.new
     assert_raises(ArgumentError, "Should raise error if puzzle does not respond to #cell") { Block.new(bad_puzzle, 0, 0) }
   end

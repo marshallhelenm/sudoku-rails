@@ -18,12 +18,12 @@ require_relative "cell"
 require_relative "sudoku"
 
 class Block < Group
-    # Initialize a Block with a PuzzleMatrix and block indices (row_number, column_number).
+    # Initialize a Block with a Puzzle and block indices (row_number, column_number).
     # Raises ArgumentError if arguments are invalid.
     def initialize(puzzle, row_number, column_number)
         # Validate puzzle type and interface
-        unless puzzle.is_a?(PuzzleMatrix)
-            raise ArgumentError, "Block initialization error: puzzle must be a PuzzleMatrix, got #{puzzle.class}"
+        unless puzzle.is_a?(Puzzle)
+            raise ArgumentError, "Block initialization error: puzzle must be a Puzzle, got #{puzzle.class}"
         end
         unless puzzle.respond_to?(:cell)
             raise ArgumentError, "Block initialization error: puzzle must respond to #cell method"

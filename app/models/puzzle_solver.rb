@@ -1,13 +1,13 @@
 class PuzzleSolver
     require_relative "sudoku"
 
-    # Initializes the PuzzleSolver with a game instance.
-    # @param game [Game] the game to solve
+    # Initializes the PuzzleSolver with a puzzle instance.
+    # @param puzzle [Puzzle] the puzzle to solve
     # @param isolate [Boolean] whether to solve a duplicate of the puzzle
     # @param display [Boolean] whether to broadcast solving steps
-    def initialize(game, isolate: false, display: false)
-        unless game.is_a?(Game)
-            raise ArgumentError, "game must be a Game"
+    def initialize(puzzle, isolate: false, display: false)
+        unless puzzle.is_a?(Puzzle)
+            raise ArgumentError, "puzzle must be a Puzzle"
         end
         unless [ true, false ].include?(isolate)
             raise ArgumentError, "isolate must be a boolean"
@@ -17,11 +17,9 @@ class PuzzleSolver
         end
 
         if isolate
-            @puzzle_matrix = game.puzzle_matrix.duplicate
-            @game = Game.new(values: @puzzle_matrix)
+            @puzzle = puzzle.duplicate
         else
-            @game = game
-            @puzzle_matrix = game.puzzle_matrix
+            @puzzle = puzzle
         end
         @display = display
         @solve_time = nil
@@ -34,18 +32,18 @@ class PuzzleSolver
     def solve
         prepare_puzzle
         @solve_time = time_solving { main_solving_loop }
-        @game.complete_and_valid?
+        @puzzle.complete_and_valid?
     end
 
     private
 
-    attr_reader :game, :puzzle_matrix, :display
+    attr_reader :puzzle, :display
 
     def prepare_puzzle
-        @puzzle_matrix.reset_options
-        @puzzle_matrix.cells.each do |cell|
+        @puzzle.reset_options
+        @puzzle.cells.each do |cell|
             next if cell.value == 0
-            @game.forbid_cell_relatives(cell)
+            @puzzle.forbid_cell_relatives(cell)
         end
     end
 
@@ -64,25 +62,25 @@ class PuzzleSolver
     end
 
     def finished?(passes_with_no_progress)
-        @game.complete? || passes_with_no_progress == 3
+        @puzzle.complete? || passes_with_no_progress == 3
     end
 
     def try_solving_strategies
         low_hanging_fruit
-        return true if @game.complete?
+        return true if @puzzle.complete?
         find_families_in_vectors
-        return true if @game.complete?
+        return true if @puzzle.complete?
         find_families_in_blocks
-        return true if @game.complete?
+        return true if @puzzle.complete?
         find_sets
-        return true if @game.complete?
-        @game.update_values_found
+        return true if @puzzle.complete?
+        @puzzle.update_values_found if @puzzle.respond_to?(:update_values_found)
     end
 
     # Fills in cells with only one possible value and finds solo options in groups until no more can be found.
     def low_hanging_fruit
         # keep looking for cells with only one option and groups where a value can only go in one cell until there are no more to find
-        return if @game.complete?
+        return if @puzzle.complete?
         still_searching = true
         until !still_searching do
             found_new = find_single_option_cell
@@ -98,7 +96,7 @@ class PuzzleSolver
         found_new = false
         still_searching = true
         until !still_searching
-            @puzzle_matrix.cells.each_with_index do |cell, i, j|
+            @puzzle.cells.each_with_index do |cell, i, j|
                 still_searching = !(i == 8 && j == 8)
                 next if cell.value != 0
                 next unless cell.options.length == 1
@@ -117,7 +115,7 @@ class PuzzleSolver
     def find_solo_options
         # check each row, column, and block to see if only one of its cells can be N
         found_new = false
-        @game.puzzle_groups.each do |group|
+        @puzzle.puzzle_groups.each do |group|
             remaining = group.remaining_values
             remaining.each do |num|
                 possible_cell = nil
@@ -149,7 +147,7 @@ class PuzzleSolver
             raise ArgumentError, "group must respond to :cells"
         end
         families = {}
-        Sudoku::ZERO_RANGE.each do |num|
+        Sudoku::COORD_RANGE.each do |num|
             families[num] = []
             family = []
             group.cells.each do |cell|
@@ -163,7 +161,7 @@ class PuzzleSolver
 
     # Applies family-finding logic to all vectors (rows and columns).
     def find_families_in_vectors
-        @puzzle_matrix.vectors.each do |vector|
+        @puzzle.vectors.each do |vector|
             break if @game.complete?
             # check each group for a value that can only appear in one of two or three cells
             families = find_families_in_group(vector)
@@ -171,7 +169,7 @@ class PuzzleSolver
             families.each_key do |value|
                 families[value].each do |family|
                     if family.collect(&:block_coordinates).uniq.length == 1
-                        @puzzle_matrix.block_from_cell(family[0]).cells.each do |cell|
+                        @puzzle.block_from_cell(family[0]).cells.each do |cell|
                             next if family.include?(cell)
                             cell.forbid(value)
                         end
@@ -184,7 +182,7 @@ class PuzzleSolver
 
     # Applies family-finding logic to all blocks.
     def find_families_in_blocks
-        @puzzle_matrix.blocks.each do |block|
+        @puzzle.blocks.each do |block|
             break if @game.complete?
             # check each block for a value that can only appear in one of two or three cells
             families = find_families_in_group(block)
@@ -192,12 +190,12 @@ class PuzzleSolver
             families.each_key do |value|
                 families[value].each do |family|
                     if family.collect(&:ci).uniq.length == 1
-                        @puzzle_matrix.row_from_cell(family[0]).cells.each do |cell|
+                        @puzzle.row_from_cell(family[0]).cells.each do |cell|
                             next if family.include?(cell)
                             cell.forbid(value)
                         end
                     elsif family.collect(&:cj).uniq.length == 1
-                        @puzzle_matrix.column_from_cell(family[0]).cells.each do |cell|
+                        @puzzle.column_from_cell(family[0]).cells.each do |cell|
                             next if family.include?(cell)
                             cell.forbid(value)
                         end
@@ -212,7 +210,7 @@ class PuzzleSolver
     def find_sets
         Range(2, 6).each do |size|
             break if @game.complete?
-            @game.puzzle_groups.each do |group|
+            @puzzle.puzzle_groups.each do |group|
                 # look for a set of numbers of size n where n cells can only contain any of those numbers
                 # for example, only 2 cells can be a [1,2]
                 # or only 3 cells can be a [4,5,6]
@@ -275,5 +273,10 @@ class PuzzleSolver
         @game.broadcast_cell(ci, cj) if @display
         find_single_option_cell
         find_solo_options
+    end
+
+    def broadcast_cell(ci, cj)
+        cell = @puzzle.cell(ci, cj)
+        Turbo::StreamsChannel.broadcast_action_to(:cell_squares, action: :replace, target: "cell_#{cell.ci}_#{cell.cj}", partial: "sudoku/cell_square", locals: { value: cell.value, ci: cell.ci, cj: cell.cj, options: cell.options })
     end
 end

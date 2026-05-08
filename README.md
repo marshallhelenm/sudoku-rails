@@ -26,4 +26,4 @@ Things you may want to cover:
 
 MODELS:
 Game: Holds the logic and values involved in solving a puzzle
-PuzzleMatrix: Holds the values of the puzzle, and logic for evaluating those values (such as number of empty cells)
+Puzzle: Holds the values of the puzzle, and logic for evaluating those values (such as number of empty cells)

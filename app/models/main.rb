@@ -51,7 +51,7 @@ def main
     # solver.solve(display:true)
     # puzzle.print_puzzle
     generator = PuzzleGenerator.new
-    # generator.generate_completed_puzzle_matrix
+    # generator.generate_completed_puzzle
     puzzles = generator.generate_puzzles(5)
     10.times do
         puts ""
