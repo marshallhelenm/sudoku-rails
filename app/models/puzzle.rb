@@ -68,9 +68,9 @@ class Puzzle
     def reset_options
         @matrix.each do |cell|
             if cell.value != 0
-                cell.options = []
+                cell.options = Set.new
             else
-                cell.options = Sudoku::VALUE_RANGE.dup
+                cell.options = Set.new(1..9)
             end
         end
         invalidate_group_caches
@@ -91,24 +91,22 @@ class Puzzle
         (@rows ||= build_rows)[ci]
     end
 
-    # Get an array of Group objects for the given range of rows
-    def rows(range = Sudoku::COORD_RANGE)
-        range.map { |num| row(num) }
-    end
-
     # Get a column as a Group object
     def column(cj)
         (@columns ||= build_columns)[cj]
     end
 
-    # Get an array of Group objects for all columns
+    def rows
+        @rows ||= build_rows
+    end
+
     def columns
-        Sudoku::COORD_RANGE.map { |num| column(num) }
+        @columns ||= build_columns
     end
 
     # Get all row and column Group objects
     def vectors
-        Sudoku::COORD_RANGE.flat_map { |num| [ row(num), column(num) ] }
+        rows.merge(columns)
     end
 
     # Get the Block object for the given block indices

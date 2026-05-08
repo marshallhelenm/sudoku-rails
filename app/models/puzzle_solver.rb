@@ -101,8 +101,7 @@ class PuzzleSolver
                 next if cell.value != 0
                 next unless cell.options.length == 1
 
-                cell.value = cell.options[0]
-                confirm_cell(cell.options[0], i, j)
+                confirm_cell(cell.options.first, i, j)
                 found_new = true
                 break
             end
@@ -115,7 +114,7 @@ class PuzzleSolver
     def find_solo_options
         # check each row, column, and block to see if only one of its cells can be N
         found_new = false
-        @puzzle.puzzle_groups.each do |group|
+        @puzzle.groups.each do |group|
             remaining = group.remaining_values
             remaining.each do |num|
                 possible_cell = nil
@@ -162,7 +161,7 @@ class PuzzleSolver
     # Applies family-finding logic to all vectors (rows and columns).
     def find_families_in_vectors
         @puzzle.vectors.each do |vector|
-            break if @game.complete?
+            break if @puzzle.complete?
             # check each group for a value that can only appear in one of two or three cells
             families = find_families_in_group(vector)
             # if all cells in the family fall within the same block, then no other cells in the block can have that value
@@ -183,7 +182,7 @@ class PuzzleSolver
     # Applies family-finding logic to all blocks.
     def find_families_in_blocks
         @puzzle.blocks.each do |block|
-            break if @game.complete?
+            break if @puzzle.complete?
             # check each block for a value that can only appear in one of two or three cells
             families = find_families_in_group(block)
             # if all cells in the family fall within the same row or column, then no other cells in that row or column can have that value
@@ -209,14 +208,14 @@ class PuzzleSolver
     # Finds and processes sets of cells that can only contain certain combinations of values.
     def find_sets
         Range(2, 6).each do |size|
-            break if @game.complete?
-            @puzzle.puzzle_groups.each do |group|
+            break if @puzzle.complete?
+            @puzzle.groups.each do |group|
                 # look for a set of numbers of size n where n cells can only contain any of those numbers
                 # for example, only 2 cells can be a [1,2]
                 # or only 3 cells can be a [4,5,6]
                 # this could look like [[1,2,3], [1,2,3], [1,2,3]] or [[1,3], [1,2], [1,2,3]]
                 # only goes up to size 5 because any higher and you're better off using other elimination strategies
-                return if @game.complete?
+                return if @puzzle.complete?
                 possible_values = group.remaining_values
                 next if possible_values.length <= size
                 number_groupings = possible_values.combination(size).to_a
@@ -269,8 +268,8 @@ class PuzzleSolver
         # assign the value to the cell and forbid that value in all siblings
         # also broadcast the change if we're displaying the solving process
         # then check for any new single option cells or solo options that may have been revealed by this change
-        @game.confirm_cell(value, ci, cj)
-        @game.broadcast_cell(ci, cj) if @display
+        @puzzle.confirm_cell(value, ci, cj)
+        broadcast_cell(ci, cj) if @display
         find_single_option_cell
         find_solo_options
     end

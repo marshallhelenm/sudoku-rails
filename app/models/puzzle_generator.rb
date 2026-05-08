@@ -106,7 +106,7 @@ class PuzzleGenerator
         value_count = @working_matrix.count_confirmed_values
         n = 1
         until @working_puzzle.complete_and_valid? || n == 5 do
-            groups = @working_matrix.rows((1...9).to_a).sort_by { |g|g.remaining_values.length }
+            groups = @working_matrix.rows.sort_by { |g|g.remaining_values.length }
             groups.each do |group|
                 next if group.remaining_values == 0
                 group.empty_cells.each do |cell|
