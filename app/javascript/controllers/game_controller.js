@@ -34,4 +34,10 @@ export default class extends Controller {
       responseKind: "turbo-stream",
     });
   }
+
+  async generatePuzzles() {
+    const response = await patch("/generate_puzzles", {
+      responseKind: "turbo-stream",
+    });
+  }
 }

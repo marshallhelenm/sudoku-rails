@@ -1,5 +1,5 @@
 class SudokuController < ApplicationController
-  include CookieHelper
+  include ApplicationHelper
   def puzzler
     @puzzle = load_game_state
     @puzzle = @puzzle.present? ? @puzzle : set_new_puzzle
@@ -20,10 +20,20 @@ class SudokuController < ApplicationController
     solver.solve
   end
 
+  def generate_puzzles
+    generator = PuzzleGenerator.new
+    generator.generate_puzzles(5, 1)
+    @failed_puzzle = generator.failed_puzzles.sample
+
+    if @failed_puzzle
+      Turbo::StreamsChannel.broadcast_action_to(:game_board, action: :replace, target: "game_board", partial: "sudoku/game_board", locals: { puzzle: @failed_puzzle })
+    end
+  end
+
   private
 
   def set_new_puzzle
-    puzzles = Sudoku::PUZZLES
+    puzzles = Sudoku.load_puzzles
     puzzle = puzzles.sample
     save_game_state(puzzle)
     puzzle

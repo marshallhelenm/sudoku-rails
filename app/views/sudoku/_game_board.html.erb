@@ -1,10 +1,14 @@
 <%# locals: {puzzle:} %>
 <%= turbo_frame_tag "game_board" do %>
     <%= turbo_stream_from(:cell_squares) %>
+    <%= turbo_stream_from(:game_board) %>
+    <% if @failed_puzzle %>
+        <h3>Failed Puzzle:</h3>
+    <% end %>
     <div class="board" >
-        <% puzzle.rows.each do |row| %>
+        <% puzzle.rows.values.each do |row| %>
             <% row.cells.each do |cell| %>
-                <%= render "cell_square", value: cell.value, ci: cell.ci, cj: cell.cj, options: cell.options %>
+                <%= render "sudoku/cell_square", value: cell.value, ci: cell.ci, cj: cell.cj, options: cell.options %>
             <% end %>
         <% end %>
     </div>

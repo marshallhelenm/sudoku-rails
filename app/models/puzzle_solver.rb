@@ -5,7 +5,7 @@ class PuzzleSolver
     # @param puzzle [Puzzle] the puzzle to solve
     # @param isolate [Boolean] whether to solve a duplicate of the puzzle
     # @param display [Boolean] whether to broadcast solving steps
-    def initialize(puzzle, isolate: false, display: false)
+    def initialize(puzzle, isolate: false, display: false, )
         unless puzzle.is_a?(Puzzle)
             raise ArgumentError, "puzzle must be a Puzzle"
         end
@@ -120,7 +120,7 @@ class PuzzleSolver
                 possible_cell = nil
                 group.cells.each do |cell|
                     next if cell.value != 0
-                    next unless cell.can_be?(num)
+                    next unless cell.options_include?(num)
                     if possible_cell.nil?
                         # if we haven't found a possible cell for this value yet, this is the possible cell
                         possible_cell = cell
@@ -142,18 +142,17 @@ class PuzzleSolver
     # @param group [Group] the group to search
     # @return [Hash] mapping of value to families
     def find_families_in_group(group)
-        unless group.respond_to?(:cells)
-            raise ArgumentError, "group must respond to :cells"
-        end
+        raise ArgumentError, "group must be a Group" unless group.is_a?(Group)
+
         families = {}
         Sudoku::COORD_RANGE.each do |num|
             families[num] = []
             family = []
             group.cells.each do |cell|
-                family << cell if cell.can_be?(num)
-                break if family.length > size
+                family << cell if cell.options_include?(num)
+                break if family.length > 2
             end
-            families[num] << family if family.length <= 3 && family.length > 1
+            families[num] << family if (2..3).include?(family.length)
         end
         families
     end
@@ -181,7 +180,7 @@ class PuzzleSolver
 
     # Applies family-finding logic to all blocks.
     def find_families_in_blocks
-        @puzzle.blocks.each do |block|
+        @puzzle.blocks_array.each do |block|
             break if @puzzle.complete?
             # check each block for a value that can only appear in one of two or three cells
             families = find_families_in_group(block)
@@ -207,7 +206,7 @@ class PuzzleSolver
 
     # Finds and processes sets of cells that can only contain certain combinations of values.
     def find_sets
-        Range(2, 6).each do |size|
+        (2..6).each do |size|
             break if @puzzle.complete?
             @puzzle.groups.each do |group|
                 # look for a set of numbers of size n where n cells can only contain any of those numbers
@@ -256,18 +255,6 @@ class PuzzleSolver
     # @param ci [Integer] Row index
     # @param cj [Integer] Column index
     def confirm_cell(value, ci, cj)
-        unless value.is_a?(Integer) && value > 0 && value <= 9
-            raise ArgumentError, "value must be an integer between 1 and 9"
-        end
-        unless ci.is_a?(Integer) && ci >= 0 && ci <= 8
-            raise ArgumentError, "ci must be an integer between 0 and 8"
-        end
-        unless cj.is_a?(Integer) && cj >= 0 && cj <= 8
-            raise ArgumentError, "cj must be an integer between 0 and 8"
-        end
-        # assign the value to the cell and forbid that value in all siblings
-        # also broadcast the change if we're displaying the solving process
-        # then check for any new single option cells or solo options that may have been revealed by this change
         @puzzle.confirm_cell(value, ci, cj)
         broadcast_cell(ci, cj) if @display
         find_single_option_cell

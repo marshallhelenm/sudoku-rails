@@ -3,11 +3,13 @@
 #
 # Attributes:
 #   value   - Integer (0-9), 0 means empty
-#   ci      - Integer (0-9), row index
-#   cj      - Integer (0-9), column index
+#   ci      - Integer (0-8), row index
+#   cj      - Integer (0-8), column index
 #   options - Array of unique integers (1-9), possible values for the cell
 #
 # Provides validation for all attributes and utility methods for Sudoku logic.
+require "byebug"
+
 class Cell
     require_relative "sudoku"
     VALUE_RANGE = Sudoku::VALUE_RANGE
@@ -36,21 +38,20 @@ class Cell
         @value = val
     end
 
-    # Get the cell's row index (0-9)
+    # Get the cell's row index (0-8)
     def ci
         @ci
     end
-    # Set the cell's row index, must be integer 0-9
+    # Set the cell's row index, must be integer 0-8
     def ci=(val)
         validate_index(val, "ci")
         @ci = val
     end
 
-    # Get the cell's column index (0-9)
+    # Get the cell's column index (0-8)
     def cj
         @cj
     end
-    # Set the cell's column index, must be integer 0-9
     def cj=(val)
         validate_index(val, "cj")
         @cj = val
@@ -72,7 +73,7 @@ class Cell
         if overwrite
             self.value = val
         else
-            unless self.can_be?(val)
+            unless self.options_include?(val)
                 raise StandardError, "cell cannot be the provided value"
             end
             self.value = val
@@ -82,10 +83,11 @@ class Cell
     # Assign a value to the cell after evaluating options in the given matrix.
     # Raises error if value is not allowed in context.
     def evaluate_and_assign_value(val, matrix)
-        unless self.can_be?(val) && can_be_in_matrix?(val, matrix, rewrite_options = false)
-            raise StandardError, "cell cannot be the provided value"
+        if self.options_include?(val) && can_be_in_matrix?(val, matrix, rewrite_options = false)
+            self.value = val
+        else
+            false
         end
-        self.value = val
     end
 
     # Return the cell's coordinates as [row, column]
@@ -121,13 +123,17 @@ class Cell
         matrix.siblings_of(self)
     end
 
+    def sibling_values(matrix)
+        siblings(matrix).map(&:value).to_set
+    end
+
     # Forbid this cell's value in all sibling cells in the matrix
     def forbid_siblings(matrix)
         siblings(matrix).each { |sibling| sibling.forbid(self.value) }
     end
 
     # Check if the cell can be the given number (in options)
-    def can_be?(num)
+    def options_include?(num)
         self.options.include?(num)
     end
 
@@ -178,18 +184,18 @@ class Cell
 
     def validate_value(val)
         unless val.is_a?(Integer) && VALUE_RANGE.include?(val)
-            raise ArgumentError, "value must be an integer between #{VALUE_RANGE.first} and #{VALUE_RANGE.last}"
+            raise ArgumentError, "value must be an integer between #{VALUE_RANGE.first} and #{VALUE_RANGE.last}, got #{val.inspect}"
         end
     end
 
     def validate_index(val, name)
-        unless val.is_a?(Integer) && VALUE_RANGE.include?(val)
-            raise ArgumentError, "#{name} must be an integer between #{VALUE_RANGE.first} and #{VALUE_RANGE.last}"
+        unless val.is_a?(Integer) && (0..8).include?(val)
+            raise ArgumentError, "#{name} must be an integer between 0 and 8, got #{val.inspect}"
         end
     end
 
     def validate_options(opts)
-        unless opts.is_a?(Set) && opts.all? { |o| o.is_a?(Integer) && OPTIONS_RANGE.include?(o) }
+        unless opts.is_a?(Set) && opts.all? { |o| o.is_a?(Integer) && OPTIONS_RANGE.include?(o) } && opts.size == opts.to_a.uniq.size
             raise ArgumentError, "options must be a set of unique integers between #{OPTIONS_RANGE.first} and #{OPTIONS_RANGE.last}"
         end
     end

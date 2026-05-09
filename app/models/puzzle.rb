@@ -58,6 +58,7 @@ class Puzzle
     end
 
     attr_reader :confirmed_count
+    attr_reader :matrix
 
     # Return a deep copy of the puzzle matrix
     def duplicate
@@ -73,7 +74,6 @@ class Puzzle
                 cell.options = Set.new(1..9)
             end
         end
-        invalidate_group_caches
     end
 
     # Get the cell at (i, j)
@@ -106,7 +106,7 @@ class Puzzle
 
     # Get all row and column Group objects
     def vectors
-        rows.merge(columns)
+        rows.values + columns.values
     end
 
     # Get the Block object for the given block indices
@@ -121,14 +121,26 @@ class Puzzle
         block(block_row, block_col)
     end
 
+    def row_from_cell(cell)
+        row(cell.ci)
+    end
+
+    def column_from_cell(cell)
+        column(cell.cj)
+    end
+
     # Get all Block objects in the puzzle
     def blocks
-        [ [ 0, 0 ], [ 0, 1 ], [ 0, 2 ], [ 1, 0 ], [ 1, 1 ], [ 1, 2 ], [ 2, 0 ], [ 2, 1 ], [ 2, 2 ] ].map { |coords| block(coords[0], coords[1]) }
+        @blocks ||= build_blocks
+    end
+
+    def blocks_array
+        blocks.values
     end
 
     # Get all logical groups (rows, columns, and blocks)
     def groups
-        @groups_cache ||= vectors + blocks
+        @groups_cache ||= vectors + blocks.values
     end
 
     # Count the number of cells with a confirmed (nonzero) value
@@ -140,6 +152,10 @@ class Puzzle
     def complete?
         update_confirmed_count
         @confirmed_count == 81
+    end
+
+    def blank_cells
+        @matrix.select { |cell| cell.empty? }
     end
 
     # Count the number of blank (zero) cells
@@ -196,13 +212,20 @@ class Puzzle
         81 - count_confirmed_values
     end
 
+    def evaluate_initial_options
+        @matrix.each do |cell|
+            cell.evaluate_options(self, overwrite = true)
+        end
+    end
+
     # Confirm a value in a cell, update relatives and confirmed count
     def confirm_cell(value, ci, cj)
         cell = cell(ci, cj)
-        cell.evaluate_and_assign_value(value, self)
+        confirmed = cell.evaluate_and_assign_value(value, self)
+        return false unless confirmed
         forbid_cell_relatives(cell)
         update_confirmed_count
-        invalidate_group_caches
+        true
     end
 
     # Update the confirmed count and return true if it changed
@@ -213,14 +236,6 @@ class Puzzle
         number_changed
     end
 
-    # Invalidate cached groupings (rows, columns, blocks, groups)
-    # TODO: is this needed?
-    def invalidate_group_caches
-        @rows = nil
-        @columns = nil
-        @blocks = nil
-        @groups_cache = nil
-    end
 
     # Returns true if all groups are valid
     def valid?
@@ -228,8 +243,31 @@ class Puzzle
     end
 
     # Returns true if the puzzle is valid and complete
-    def valid_and_complete?
+    def complete_and_valid?
         valid? && complete?
+    end
+
+    def reevaluate_all_options
+        @matrix.each do |cell|
+            next unless cell.empty?
+            cell.evaluate_options(self, overwrite = true)
+        end
+    end
+
+    def print_values
+        rows.values.each do |row|
+            row.cells.each do |cell|
+                print cell.value == 0 ? "." : cell.value
+                print " "
+                if cell.cj == 2 || cell.cj == 5
+                    print "| "
+                end
+                print "\n" if cell.cj == 8
+            end
+            if row.cells.first.ci == 2 || row.cells.first.ci == 5
+                puts "------+-------+------"
+            end
+        end
     end
 
     private

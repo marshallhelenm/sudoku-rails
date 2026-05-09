@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "puzzler" => "sudoku#puzzler"
   patch "solve_puzzle" => "sudoku#solve_puzzle"
   patch "new_puzzle" => "sudoku#new_puzzle"
+  patch "generate_puzzles" => "sudoku#generate_puzzles"
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
