@@ -106,7 +106,7 @@ class PuzzleTest < Minitest::Test
     changed = @puzzle.update_confirmed_count
     assert changed, "Confirmed count should change after blanking a cell"
     assert_equal filled_count - 1, @puzzle.count_confirmed_values, "Should confirm cell and update count"
-    @puzzle.confirm_cell(value_to_assign, cell.ci, cell.cj)
+    cell.confirm(value_to_assign)
     assert_equal filled_count, @puzzle.count_confirmed_values, "Should confirm cell and update count"
   end
 

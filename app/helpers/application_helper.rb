@@ -8,7 +8,7 @@ module ApplicationHelper
   def save_game_state(puzzle, overwrite = false)
     return if (cookies[:values].present? || cookies[:options].present?) && !overwrite
     cookies[:values] = puzzle.values_array.to_s
-    cookies[:options] = puzzle.options_array.to_s
+    cookies[:options] = puzzle.json_friendly_options_array.to_s
   end
 
   def load_game_state

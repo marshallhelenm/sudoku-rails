@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "minitest/autorun"
+require "minitest/mock"
 require_relative "../../app/models/cell"
 require_relative "../../app/models/puzzle"
 
@@ -173,5 +174,44 @@ class CellTest < Minitest::Test
     cell.reset
     assert cell.can_be_in_matrix?(val), "can_be_in_matrix? should return true for a valid option"
     refute cell.can_be_in_matrix?(bad_val), "can_be_in_matrix? should return false for an invalid option"
+  end
+
+  def test_confirm_assigns_value_and_forbids_siblings
+    puzzle = Puzzle.new(values: Matrix[*@valid_puzzle_array])
+    cell = puzzle.cell(0, 0)
+    # Pick a value that is valid for this cell
+    valid_value = (Set.new(1..9) - cell.sibling_values).first
+    # Confirm should assign the value and forbid it in siblings
+    result = cell.confirm(valid_value)
+    assert result, "confirm should return true when assignment is successful"
+    assert_equal valid_value, cell.value, "confirm should assign the value to the cell"
+    cell.siblings.each do |sibling|
+      refute sibling.options.include?(valid_value), "confirm should forbid the value in all siblings' options"
+    end
+  end
+
+  def test_confirm_returns_false_for_invalid_value
+    puzzle = Puzzle.new(values: Matrix[*@valid_puzzle_array])
+    cell = puzzle.cell(0, 3)
+    # Pick a value that is not valid for this cell
+    invalid_value = cell.sibling_values.find() { |v| v != 0 }
+    result = cell.confirm(invalid_value)
+    refute result, "confirm should return false when assignment is not allowed"
+    refute_equal invalid_value, cell.value, "confirm should not assign an invalid value"
+  end
+
+  def test_bust_caches_calls_puzzle_and_group_bust_cache
+    # We'll use a mock for puzzle and group to check bust_cache is called
+    group = Minitest::Mock.new
+    group.expect(:bust_cache, nil)
+    puzzle = Minitest::Mock.new
+    puzzle.expect(:bust_info_cache, nil)
+    cell = Cell.new(puzzle: puzzle, value: 1, ci: 0, cj: 0)
+    # Stub groups to return our mock group
+    def cell.groups; [ @mock_group ]; end
+    cell.instance_variable_set(:@mock_group, group)
+    cell.bust_caches
+    group.verify
+    puzzle.verify
   end
 end

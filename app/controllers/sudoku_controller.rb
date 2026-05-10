@@ -3,6 +3,7 @@ class SudokuController < ApplicationController
   def puzzler
     @puzzle = load_game_state
     @puzzle = @puzzle.present? ? @puzzle : set_new_puzzle
+    byebug
   end
 
   def new_puzzle
@@ -24,10 +25,19 @@ class SudokuController < ApplicationController
     generator = PuzzleGenerator.new
     generator.generate_puzzles(5, 1)
     @failed_puzzle = generator.failed_puzzles.sample
-
+    @failed_puzzle.rows.values.each do |row|
+      puts "row #{row.cells.first.ci}: #{row.valid? ? "valid" : "invalid"}"
+    end
+    @failed_puzzle.columns.values.each do |column|
+      puts "column #{column.cells.first.cj}: #{column.valid? ? "valid" : "invalid"}"
+    end
+    @failed_puzzle.blocks_array.each do |block|
+      puts "block #{block.row_number}, #{block.column_number}: #{block.valid? ? "valid" : "invalid"}"
+    end
     if @failed_puzzle
       Turbo::StreamsChannel.broadcast_action_to(:game_board, action: :replace, target: "game_board", partial: "sudoku/game_board", locals: { puzzle: @failed_puzzle })
     end
+    save_game_state(@failed_puzzle, true)
   end
 
   private

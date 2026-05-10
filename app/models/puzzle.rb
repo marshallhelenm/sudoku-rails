@@ -186,6 +186,12 @@ class Puzzle
         @cache.cache_or_compute(:options_array) { options_matrix.to_a }
     end
 
+    def json_friendly_options_array
+        options_array.map do |row|
+            row.map { |opts| opts.to_a }
+        end
+    end
+
     # Count the number of empty cells with no options
     def optionless_cell_count
         @matrix.count do |cell|
@@ -218,21 +224,9 @@ class Puzzle
 
     def evaluate_initial_options
         @matrix.each do |cell|
-            cell.evaluate_options(self, overwrite = true)
+            cell.evaluate_options(true)
         end
     end
-
-    # Confirm a value in a cell, update relatives and confirmed count
-    def confirm_cell(value, ci, cj)
-        cell = cell(ci, cj)
-        confirmed = evaluate_and_assign_cell_value(cell, value)
-        return false unless confirmed
-        cell.forbid_siblings
-        update_confirmed_count
-        true
-    end
-
-
 
     # Returns true if all groups are valid
     def valid?
@@ -247,7 +241,7 @@ class Puzzle
     def reevaluate_all_options
         @matrix.each do |cell|
             next unless cell.empty?
-            cell.evaluate_options(self, overwrite = true)
+            cell.evaluate_options(true)
         end
     end
 
@@ -279,15 +273,6 @@ class Puzzle
     end
 
     private
-
-    def assign_cell_value(cell, value)
-        cell.assign_value(value)
-    end
-
-    def evaluate_and_assign_cell_value(cell, value)
-        cell.evaluate_options
-        assign_cell_value(cell, value)
-    end
 
     # -- Validation methods for initializer inputs -
 

@@ -207,6 +207,14 @@ class Cell
         @puzzle.bust_info_cache
     end
 
+    def confirm(value)
+        self.evaluate_options(true)
+        confirmed = self.assign_value(value)
+        return false unless confirmed
+        self.forbid_siblings
+        true
+    end
+
 
     private
 

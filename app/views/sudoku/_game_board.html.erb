@@ -1,7 +1,5 @@
 <%# locals: {puzzle:} %>
 <%= turbo_frame_tag "game_board" do %>
-    <%= turbo_stream_from(:cell_squares) %>
-    <%= turbo_stream_from(:game_board) %>
     <% if @failed_puzzle %>
         <h3>Failed Puzzle:</h3>
     <% end %>
