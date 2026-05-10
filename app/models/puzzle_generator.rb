@@ -106,7 +106,7 @@ class PuzzleGenerator
                     end
                     if found_value
                         print "."
-                        break # If we found a value for this cell, break out of the empty_cells loop to re-sort the groups.
+                        break # If we found a value for this cell, break out of the blank_cells loop to re-sort the groups.
                     else
                         print "x"
                         next # Otherwise, try the next cell in this group.

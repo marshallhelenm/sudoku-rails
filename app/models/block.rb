@@ -43,9 +43,9 @@ class Block < Group
         @cells = gather_cells
     end
 
-    attr_accessor :cells
-    attr_accessor :row_number
-    attr_accessor :column_number
+    attr_reader :cells
+    attr_reader :row_number
+    attr_reader :column_number
 
     # Convert block index (0, 1, 2) to corresponding cell indices (0-8)
     def convert_coordinates(i)

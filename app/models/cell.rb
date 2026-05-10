@@ -1,3 +1,4 @@
+
 ##
 # Cell represents a single cell in a Sudoku puzzle grid.
 #
@@ -6,93 +7,158 @@
 #   ci      - Integer (0-8), row index
 #   cj      - Integer (0-8), column index
 #   options - Array of unique integers (1-9), possible values for the cell
+#   puzzle  - Reference to the parent puzzle (required)
 #
 # Provides validation for all attributes and utility methods for Sudoku logic.
 require "byebug"
 
+
 class Cell
     require_relative "sudoku"
+    require_relative "sudoku_cache"
     VALUE_RANGE = Sudoku::VALUE_RANGE
     OPTIONS_RANGE = Sudoku::OPTIONS_RANGE
-    # Initialize a Cell with value, row (ci), column (cj), and options.
+
+    attr_reader :puzzle
+
+    # Initialize a Cell with value, row (ci), column (cj), options, and puzzle.
     # Raises ArgumentError if any attribute is invalid.
-    def initialize(value:, ci:, cj:, options: fresh_options)
+
+    def initialize(puzzle:, value:, ci:, cj:, options: fresh_options)
+        @initializing = true
+        @puzzle = puzzle
         self.value = value
-        self.ci = ci # row index
-        self.cj = cj # column index
+        if ci < 0 || ci > 8
+            raise ArgumentError, "ci (row index) must be between 0 and 8, got #{ci.inspect}"
+        end
+        if cj < 0 || cj > 8
+            raise ArgumentError, "cj (column index) must be between 0 and 8, got #{cj.inspect}"
+        end
+        @ci = ci # row index
+        @cj = cj # column index
         if options.present?
             self.options = options
         else
             self.options = value == 0 ? fresh_options : Set.new
         end
+        @initializing = false
+
+        @cell_cache = SudokuCache.new({
+            groups: { current: false, value: nil },
+            row: { current: false, value: nil },
+            column: { current: false, value: nil },
+            block: { current: false, value: nil },
+            siblings: { current: false, value: nil }
+        })
     end
 
-    # Custom attribute writers with validation
-    # Get the cell's value (0-9, 0 means empty)
-    def value
-        @value
-    end
+
+    attr_reader :ci, :cj, :value, :options
+
+    # -- Custom attribute writers with validation --
+
     # Set the cell's value, must be integer 0-9
     def value=(val)
         validate_value(val)
+        bust_caches if !@initializing && @value != val
         @value = val
     end
 
-    # Get the cell's row index (0-8)
-    def ci
-        @ci
-    end
-    # Set the cell's row index, must be integer 0-8
-    def ci=(val)
-        validate_index(val, "ci")
-        @ci = val
-    end
-
-    # Get the cell's column index (0-8)
-    def cj
-        @cj
-    end
-    def cj=(val)
-        validate_index(val, "cj")
-        @cj = val
-    end
-
-    # Get the cell's options (possible values, a set of unique integers 1-9)
-    def options
-        @options
-    end
     # Set the cell's options, must be a set of unique integers 1-9
     def options=(opts)
         validate_options(opts)
+        bust_caches if !@initializing && @options != opts
         @options = opts
     end
+
+    # -- Informational methods --
+
+    # Return the cell's coordinates as [row, column]
+    def coordinates
+        [ @ci, @cj ]
+    end
+
+    # Returns the block row index for this cell (0-2)
+    def block_i
+        @ci / 3
+    end
+
+    # Returns the block column index for this cell (0-2)
+    def block_j
+        @cj / 3
+    end
+
+    # Returns the block coordinates as [row, col]
+    def block_coordinates
+        [ block_i, block_j ]
+    end
+
+    def row
+      @cell_cache.cache_or_compute(:row) { @puzzle.row(@ci) }
+    end
+
+    def column
+        @cell_cache.cache_or_compute(:column) { @puzzle.column(@cj) }
+    end
+
+    def block
+        @cell_cache.cache_or_compute(:block) { @puzzle.block(block_i, block_j) }
+    end
+
+    def groups
+        @cell_cache.cache_or_compute(:groups) { [ row, column, block ] }
+    end
+
+    # Return all sibling cells (same row, column, or block) in the matrix
+    def siblings
+        @cell_cache.cache_or_compute(:siblings) do
+            sibs = Set.new
+            sibs.merge(row.cells)
+            sibs.merge(column.cells)
+            sibs.merge(block.cells)
+            sibs.delete(self)
+            sibs
+        end
+    end
+
+    def sibling_values
+        siblings.map(&:value).to_set
+    end
+
+    # -- Evaluative methods --
+
+    # Returns true if the cell is empty (value == 0)
+    def empty?
+        self.value == 0
+    end
+
+    # Check if the cell can be the given number in the context of the matrix
+    def can_be_in_matrix?(num, rewrite_options = false)
+        temp_options = self.evaluate_options(rewrite_options)
+        temp_options.include?(num)
+    end
+
+    # Check if the cell can be the given number (in options)
+    def options_include?(num)
+        self.options.include?(num)
+    end
+
+    # -- Utility methods for Sudoku logic --
 
     # Assign a value to the cell, optionally overwriting options check.
     # Raises error if value is not allowed and overwrite is false.
     def assign_value(val, overwrite = false)
         if overwrite
             self.value = val
+            true
         else
-            unless self.options_include?(val)
-                raise StandardError, "cell cannot be the provided value"
+            if self.options_include?(val)
+                self.value = val
+                true
+            else
+                false
             end
-            self.value = val
         end
-    end
-
-    # Assign a value to the cell after evaluating options in the given matrix.
-    # Raises error if value is not allowed in context.
-    def evaluate_and_assign_value(val, matrix)
-        if self.options_include?(val) && can_be_in_matrix?(val, matrix, rewrite_options = false)
-            self.value = val
-        else
-            false
-        end
-    end
-
-    # Return the cell's coordinates as [row, column]
-    def coordinates
-        [ @ci, @cj ]
     end
 
     # Reset the cell to empty and restore all options
@@ -118,30 +184,16 @@ class Cell
         self.options
     end
 
-    # Return all sibling cells (same row, column, or block) in the matrix
-    def siblings(matrix)
-        matrix.siblings_of(self)
-    end
-
-    def sibling_values(matrix)
-        siblings(matrix).map(&:value).to_set
-    end
-
     # Forbid this cell's value in all sibling cells in the matrix
-    def forbid_siblings(matrix)
-        siblings(matrix).each { |sibling| sibling.forbid(self.value) }
-    end
-
-    # Check if the cell can be the given number (in options)
-    def options_include?(num)
-        self.options.include?(num)
+    def forbid_siblings
+        siblings.each { |sibling| sibling.forbid(self.value) }
     end
 
     # Evaluate and return possible options for this cell given the matrix.
     # If overwrite is true, update the cell's options.
-    def evaluate_options(matrix, overwrite = false)
+    def evaluate_options(overwrite = false)
         temp_options = fresh_options
-        siblings(matrix).each do |sibling|
+        siblings.each do |sibling|
             if sibling.value != 0
                 temp_options.delete(sibling.value)
             end
@@ -150,31 +202,11 @@ class Cell
         temp_options
     end
 
-    # Check if the cell can be the given number in the context of the matrix
-    def can_be_in_matrix?(num, matrix, rewrite_options = false)
-        temp_options = self.evaluate_options(matrix, rewrite_options)
-        temp_options.include?(num)
+    def bust_caches
+        groups.each(&:bust_cache)
+        @puzzle.bust_info_cache
     end
 
-    # Returns true if the cell is empty (value == 0)
-    def empty?
-        self.value == 0
-    end
-
-    # Returns the block row index for this cell (0-2)
-    def block_i
-        self.ci / 3
-    end
-
-    # Returns the block column index for this cell (0-2)
-    def block_j
-        self.cj / 3
-    end
-
-    # Returns the block coordinates as [row, col]
-    def block_coordinates
-        [ block_i, block_j ]
-    end
 
     private
 

@@ -43,7 +43,7 @@ class PuzzleSolver
         @puzzle.reset_options
         @puzzle.cells.each do |cell|
             next if cell.value == 0
-            @puzzle.forbid_cell_relatives(cell)
+            cell.forbid_siblings
         end
     end
 
@@ -167,7 +167,7 @@ class PuzzleSolver
             families.each_key do |value|
                 families[value].each do |family|
                     if family.collect(&:block_coordinates).uniq.length == 1
-                        @puzzle.block_from_cell(family[0]).cells.each do |cell|
+                        family[0].block.cells.each do |cell|
                             next if family.include?(cell)
                             cell.forbid(value)
                         end
@@ -188,12 +188,12 @@ class PuzzleSolver
             families.each_key do |value|
                 families[value].each do |family|
                     if family.collect(&:ci).uniq.length == 1
-                        @puzzle.row_from_cell(family[0]).cells.each do |cell|
+                        family[0].row.cells.each do |cell|
                             next if family.include?(cell)
                             cell.forbid(value)
                         end
                     elsif family.collect(&:cj).uniq.length == 1
-                        @puzzle.column_from_cell(family[0]).cells.each do |cell|
+                        family[0].column.cells.each do |cell|
                             next if family.include?(cell)
                             cell.forbid(value)
                         end
