@@ -1,3 +1,77 @@
+/* Small triangle in upper left of cell */
+.cell-corner-triangle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-top: 14px solid #6d8fb3;
+  border-right: 14px solid transparent;
+  opacity: 0.5;
+  z-index: 2;
+}
+.cell {
+  position: relative;
+  box-sizing: border-box;
+}
+/* Difficulty Dropdown Styles */
+.difficulty-label {
+  font-size: 1.1rem;
+  margin-bottom: 0.2rem;
+  color: #333;
+  font-weight: 500;
+}
+.difficulty-select {
+  width: 140px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 1rem;
+  background: #f8f9fa;
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: border 0.2s;
+}
+.difficulty-select:focus {
+  border: 1.5px solid #007bff;
+  outline: none;
+}
+/* Ensure spinner overlays only the game board */
+.game-board-wrapper {
+  position: relative;
+}
+.game-board-spinner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.game-board-spinner.d-none {
+  display: none;
+}
+.spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #007bff;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 /* Sudoku Puzzler Page Styles */
 .puzzler-outer {
   display: flex;
@@ -24,6 +98,7 @@
   padding: 2rem 3rem;
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  position: relative;
 }
 
 .puzzler-controls {
@@ -43,6 +118,7 @@
   cursor: pointer;
   transition: background 0.2s;
   margin-bottom: 0.5rem;
+  width: 160px;
 }
 .puzzler-btn-primary {
   background: #007bff;
@@ -137,4 +213,45 @@
 
 .d-none {
   display: none;
+}
+
+.cell.edit-mode {
+  border: solid 3px #00ffe5 !important;
+  border-top: 3px solid #00ffe5 !important;
+  border-right: 3px solid #00ffe5 !important;
+  border-bottom: 3px solid #00ffe5 !important;
+  border-left: 3px solid #00ffe5 !important;
+}
+
+.result-success {
+  color: #28a745;
+  font-size: 1.2rem;
+  margin-top: 1rem;
+  background-color: #d4edda;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.result-failure {
+  color: #dc3545;
+  font-size: 1.2rem;
+  margin-top: 1rem;
+  background-color: #f8d7da;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.result-container {
+  width: auto;
+  min-width: 450px;
+  max-width: 100%;
+  margin: 0 auto 1.5rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 2rem 3rem;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }

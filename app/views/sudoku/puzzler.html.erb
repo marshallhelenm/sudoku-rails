@@ -3,14 +3,22 @@
     <%= turbo_stream_from(:game_board) %>
 
     <h1 class="puzzler-title">Sudoku Puzzler</h1>
-    <div data-controller="game" class="puzzler-board-container">
+    <%= render "sudoku/result", success: @solved_it %>
+    <div data-controller="game" class="puzzler-board-container" data-game-difficulty-value="<%= @difficulty %>" data-action="keyup@window->game#handleKeyUp">
         <%= render "sudoku/game_board", puzzle: @puzzle %>
         <div class="puzzler-controls">
+            <label for="difficulty-select" class="difficulty-label">Difficulty:</label>
+            <select id="difficulty-select" class="difficulty-select" data-action="change->game#changeDifficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
             <button data-action="click->game#toggleOptions" class="puzzler-btn puzzler-btn-primary">Show Options</button>
             <button type="button" data-action="click->game#solve" class="puzzler-btn puzzler-btn-success">Solve it!</button>
             <button type="button" data-action="click->game#newPuzzle" class="puzzler-btn puzzler-btn-warning">New Puzzle</button>
-            <button type="button" data-action="click->game#generatePuzzles" class="puzzler-btn puzzler-btn-warning">Generate Puzzle</button>
+            <button type="button" data-action="click->game#clearPuzzle" class="puzzler-btn puzzler-btn-warning">Clear Puzzle</button>
+            <%# <button type="button" data-action="click->game#generatePuzzles" class="puzzler-btn puzzler-btn-warning">Generate Puzzle</button> %>
         </div>
-        <%# TODO: Add loading spinner for new puzzle %>
     </div>
 </div>
+

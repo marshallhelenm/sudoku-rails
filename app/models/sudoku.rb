@@ -6,12 +6,23 @@ class Sudoku
     COORD_RANGE = Array(0..8).freeze
 
     def self.load_puzzles
-        puzzles = []
         data = JSON.parse(JSON_PUZZLES)
-        data.each do |puzzle_data|
-            puzzle = Puzzle.new(values: Matrix[*puzzle_data])
-            puzzles << puzzle
+        data.each_key do |difficulty|
+            data[difficulty] = data[difficulty].map { |puzzle_data| Puzzle.new(values: Matrix[*puzzle_data]) }
         end
-        puzzles
+        data
+    end
+
+    def self.all_puzzles
+        @all_puzzles ||= load_puzzles.values.flatten
+    end
+
+    def self.puzzles_by_difficulty(difficulty)
+        load_puzzles[difficulty.to_s]
+    end
+
+    def self.random_puzzle(difficulty = "medium")
+        puzzles = puzzles_by_difficulty(difficulty)
+        puzzles.sample
     end
 end

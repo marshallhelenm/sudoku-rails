@@ -4,12 +4,17 @@ class PuzzleGenerator
     require "matrix"
 
     def initialize(print: false)
-        @puzzles = Sudoku.load_puzzles || []
+        @puzzles = Sudoku.load_puzzles || {
+            "easy" => [],
+            "medium" => [],
+            "hard" => []
+        }
         @failed_completion_count = 0
         @failed_reduction_count = 0
         @created_puzzles_count = 0
         @failed_puzzles = []
         @print = print
+        @difficulty = "medium"
     end
 
     attr_accessor :puzzles
@@ -18,9 +23,14 @@ class PuzzleGenerator
     attr_accessor :failed_reduction_count
 
     # Generate n puzzles and save them to a JSON file as arrays of arrays of values (no options or other metadata). This is used to generate the puzzle_matrices.json file that the frontend uses to display puzzles.
-    def generate_puzzles_to_json(n)
-        puzzles = generate_puzzles(n)
-        data = puzzles.map { |puzzle| puzzle.values_array }
+    def generate_puzzles_to_json(n, difficulty: "medium")
+        @difficulty = difficulty
+        puzzles = generate_puzzles(n, difficulty: difficulty)
+        data = {
+            "easy" => puzzles["easy"]&.map { |p| p.values_array },
+            "medium" => puzzles["medium"]&.map { |p| p.values_array },
+            "hard" => puzzles["hard"]&.map { |p| p.values_array }
+        }
         json_data = JSON.generate(data)
         file_path = Rails.root.join("app/assets/puzzle_matrices.json")
         File.open(file_path, "w") do |file|
@@ -29,15 +39,20 @@ class PuzzleGenerator
     end
 
     # Generate n puzzles and return them as Puzzle objects with all metadata (cells, options, groups, etc) intact.
-    def generate_puzzles(n, total_attempts = nil)
-        puts "Generating #{n} puzzles"
+    def generate_puzzles(n, difficulty: "medium")
+        @difficulty = difficulty.to_s
+        puts "Generating #{n} #{@difficulty} puzzles..."
+        puts "******************************************"
+        puts ""
         reset_counts
         attempts = 0
-        total_attempts ||= n * 2
-        until @created_puzzles_count == n || attempts == total_attempts do
-            puzzle = generate_solvable_puzzle
+        until @created_puzzles_count == n || attempts == n * 2 do
+            puzzle = generate_solvable_puzzle(difficulty: difficulty)
             if puzzle
-                @puzzles << puzzle
+                if !@puzzles.has_key?(difficulty)
+                    @puzzles[difficulty] = []
+                end
+                @puzzles[difficulty] << puzzle
                 @created_puzzles_count += 1
                 puts "#{@created_puzzles_count} puzzles created"
                 puts "******************************************"
@@ -50,11 +65,21 @@ class PuzzleGenerator
     end
 
     # Generate a single solvable puzzle
-    def generate_solvable_puzzle
+    def generate_solvable_puzzle(difficulty: "medium")
         completed_puzzle = generate_completed_puzzle
-        byebug if !completed_puzzle && @failed_puzzles.last.valid?
         return false unless completed_puzzle
-        reduced_puzzle = reduce_puzzle(completed_puzzle, 30)
+        num_confirmed_values =
+            case @difficulty
+            when "easy"
+                40
+            when "medium"
+                32
+            when "hard"
+                25
+            else
+                30
+            end
+        reduced_puzzle = reduce_puzzle(completed_puzzle, num_confirmed_values)
         reduced_puzzle
     end
 
@@ -69,13 +94,11 @@ class PuzzleGenerator
             value = arr.pop()
             cell.confirm(value)
         end
+        print_to_console { print "⭐️" }
 
         # Evaluate the puzzle with the solver to fill in any cells that can be confirmed based on the initial block values.
         PuzzleSolver.new(@working_puzzle, print: true).solve
         value_count = @working_puzzle.confirmed_count
-        @working_puzzle.print_values
-
-        print_to_console { puts "Filled in #{value_count} values after initial block and solver evaluation. Now trying to iteratively fill in values until the puzzle is complete..." }
 
         # Iteratively fill in values using the solver until the puzzle is complete or we get stuck
         n = 0
@@ -178,8 +201,8 @@ class PuzzleGenerator
                 passes_with_no_new_blanks += 1
                 working_puzzle.bust_info_cache
                 working_puzzle.reevaluate_all_options
-                print_to_console { puts "\nNo new cells blanked in this pass. Stuck? #{passes_with_no_new_blanks >= 5 ? "Yes" : "No"}" }
-                break if passes_with_no_new_blanks >= 5
+                print_to_console { puts "\nNo new cells blanked in this pass. Stuck? #{passes_with_no_new_blanks >= 3 ? "Yes" : "No"}" }
+                break if passes_with_no_new_blanks >= 3
             else
                 passes_with_no_new_blanks = 0
             end

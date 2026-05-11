@@ -4,16 +4,20 @@
 <%= turbo_frame_tag "cell_#{ci}_#{cj}" do %>
     <div 
         class="cell <%= i_class + " " + j_class%>" 
-        data-controller="cell" 
-        data-action="click->cell#toggleOptions" 
         data-game-target="cell"
-        data-cell-target="cell"
         data-value="<%= value %>"
+        data-row="<%= ci %>"
+        data-col="<%= cj %>"
+        data-action="click->game#toggleEditMode"
         >
-        <div data-cell-target="value" class="cell-value">
+        <div 
+            class="cell-corner-triangle <%= value == 0 ? "" : "d-none"%>" 
+            data-action="click->game#toggleCellOptions" 
+        ></div>
+        <div class="cell-value">
             <%= value unless value == 0 %>
         </div>
-        <div data-cell-target="options" class="d-none cell-options">
+        <div class="d-none cell-options">
             <% options.each do |opt| %>
                 <%= opt %>
             <% end %>

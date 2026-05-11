@@ -1,0 +1,12 @@
+<%# locals: { success: nil} %>
+<%= turbo_frame_tag "result" do %>
+    <% if success.presence == "true" %>
+        <div id="success-result" class="result-container result-success">
+            <h2 class="result-title">Tada!</h2>
+        </div>
+    <% elsif success.presence == "false" %>
+        <div id="failure-result" class="result-container result-failure">
+            <h2 class="result-title">Oops! Wasn't able to solve the puzzle.</h2>
+        </div>
+    <% end %>
+<% end %>
