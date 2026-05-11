@@ -38,8 +38,9 @@ class PuzzleTest < Minitest::Test
 
   def test_duplicate
     dup = @puzzle.duplicate
-    refute_same @puzzle, dup, "Duplicate should return a new Puzzle instance"
+    refute_same @puzzle.id, dup.id, "Duplicate should have a different ID"
     assert_equal @puzzle.values_array, dup.values_array, "Duplicate should have the same values"
+    assert_equal @puzzle.options_array, dup.options_array, "Duplicate should have the same options"
   end
 
   def test_cell_and_cells
@@ -115,7 +116,13 @@ class PuzzleTest < Minitest::Test
     assert @puzzle.valid?, "Puzzle should be valid initially"
     solved_puzzle = Puzzle.new(values: Matrix[*@solved_puzzle_array])
     assert solved_puzzle.complete_and_valid?, "Solved puzzle should be valid and complete initially"
-    solved_puzzle.cell(0, 0).value = 0
+    assert solved_puzzle.valid?, "Solved puzzle should be valid"
+    assert solved_puzzle.complete?, "Solved puzzle should be complete"
+    cell = solved_puzzle.cell(0, 0)
+    cell.value = 0
+    cell.evaluate_options(true)
     refute solved_puzzle.complete_and_valid?, "Puzzle should not be complete if a cell is blank"
+    refute solved_puzzle.complete?, "Puzzle should not be complete if a cell is blank"
+    assert solved_puzzle.valid?, "Puzzle should still be valid if a cell is blank"
   end
 end

@@ -25,9 +25,6 @@ class Block < Group
         unless puzzle.is_a?(Puzzle)
             raise ArgumentError, "Block initialization error: puzzle must be a Puzzle, got #{puzzle.class}"
         end
-        unless puzzle.respond_to?(:cell)
-            raise ArgumentError, "Block initialization error: puzzle must respond to #cell method"
-        end
 
         # Validate row and column numbers
         unless (0..2).include?(row_number)
@@ -36,16 +33,23 @@ class Block < Group
         unless (0..2).include?(column_number)
             raise ArgumentError, "Block initialization error: column_number must be an integer between 0 and 2, got #{column_number.inspect}"
         end
-
         @puzzle = puzzle
         @row_number = row_number
         @column_number = column_number
         @cells = gather_cells
+        @group_type = :block
+        @group_number = row_number * 3 + column_number
+
+        super(@cells)
     end
 
     attr_reader :cells
     attr_reader :row_number
     attr_reader :column_number
+
+    def inspect
+        "#<Block row_number=#{row_number}, column_number=#{column_number}, cell_coordinates=#{coordinate_set}>"
+    end
 
     # Convert block index (0, 1, 2) to corresponding cell indices (0-8)
     def convert_coordinates(i)
@@ -72,6 +76,20 @@ class Block < Group
         set
     end
 
+
+    def validate_cell_order(cells)
+        expected_coordinates = coordinate_set
+        valid = true
+        cells.each_with_index do |cell, index|
+            expected_ci, expected_cj = expected_coordinates[index]
+            if cell.ci != expected_ci || cell.cj != expected_cj
+                valid = false
+                break
+            end
+        end
+        valid
+    end
+
     # Collects and returns all Cell objects in this block
     def gather_cells
         return @cells if defined?(@cells) && @cells
@@ -85,6 +103,11 @@ class Block < Group
     # Returns the values of all cells in this block
     def values
         @cells.collect { |cell| cell.value }
+    end
+
+    def find_cell_by_coordinates(coords)
+        ci, cj = coords
+        @cells[ci % 3 * 3 + cj % 3]
     end
 
     private

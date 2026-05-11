@@ -11,13 +11,14 @@
 #
 # Provides validation for all attributes and utility methods for Sudoku logic.
 require "byebug"
-
+require "sqids"
 
 class Cell
     require_relative "sudoku"
     require_relative "sudoku_cache"
     VALUE_RANGE = Sudoku::VALUE_RANGE
     OPTIONS_RANGE = Sudoku::OPTIONS_RANGE
+    @@sqids = Sqids.new(salt: "sudoku-puzzle-id-salt", alphabet: "0123456789abcdef", min_length: 6)
 
     attr_reader :puzzle
 
@@ -36,6 +37,7 @@ class Cell
         end
         @ci = ci # row index
         @cj = cj # column index
+        @id = generate_id
         if options.present?
             self.options = options
         else
@@ -53,7 +55,20 @@ class Cell
     end
 
 
-    attr_reader :ci, :cj, :value, :options
+    attr_reader :ci, :cj, :id
+
+    # Minimal inspect to avoid recursion/expensive output
+    def inspect
+        "#<Cell ci=#{@ci} cj=#{@cj} value=#{@value} options=#{@options.to_a}>"
+    end
+
+    def value
+        @value
+    end
+
+    def options
+        @options
+    end
 
     # -- Custom attribute writers with validation --
 
@@ -69,6 +84,10 @@ class Cell
         validate_options(opts)
         bust_caches if !@initializing && @options != opts
         @options = opts
+    end
+
+    def generate_id
+        @@sqids.encode([ ci, cj ])
     end
 
     # -- Informational methods --
@@ -91,6 +110,10 @@ class Cell
     # Returns the block coordinates as [row, col]
     def block_coordinates
         [ block_i, block_j ]
+    end
+
+    def self.block_coordinates_for(ci, cj)
+        [ ci / 3, cj / 3 ]
     end
 
     def row

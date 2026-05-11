@@ -214,4 +214,10 @@ class CellTest < Minitest::Test
     group.verify
     puzzle.verify
   end
+
+  def test_inspect
+    cell = Cell.new(puzzle: @dummy_puzzle, value: 5, ci: 3, cj: 4)
+    expected_inspect = "#<Cell ci=3 cj=4 value=5 options=[1, 2, 3, 4, 5, 6, 7, 8, 9]>"
+    assert_equal expected_inspect, cell.inspect, "inspect should return a string with cell details"
+  end
 end

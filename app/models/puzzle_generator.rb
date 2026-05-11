@@ -16,6 +16,7 @@ class PuzzleGenerator
     attr_accessor :failed_completion_count
     attr_accessor :failed_reduction_count
 
+    # Generate n puzzles and save them to a JSON file as arrays of arrays of values (no options or other metadata). This is used to generate the puzzle_matrices.json file that the frontend uses to display puzzles.
     def generate_puzzles_to_json(n)
         puzzles = generate_puzzles(n)
         data = puzzles.map { |puzzle| puzzle.values_array }
@@ -26,13 +27,7 @@ class PuzzleGenerator
         end
     end
 
-    def generate_solvable_puzzle
-        completed_puzzle = generate_completed_puzzle
-        return false unless completed_puzzle
-        reduced_puzzle = reduce_puzzle(completed_puzzle, 30)
-        reduced_puzzle
-    end
-
+    # Generate n puzzles and return them as Puzzle objects with all metadata (cells, options, groups, etc) intact.
     def generate_puzzles(n, total_attempts = nil)
         puts "Generating #{n} puzzles"
         reset_counts
@@ -43,82 +38,92 @@ class PuzzleGenerator
             if puzzle
                 @puzzles << puzzle
                 @created_puzzles_count += 1
-                puts "#{@puzzles.count} puzzles created"
+                puts "#{@created_puzzles_count} puzzles created"
                 puts "******************************************"
             end
             attempts += 1
         end
         print_counts
-        puts "#{@puzzles.count} Puzzles created!"
+        puts "#{@created_puzzles_count} Puzzles created!"
         @puzzles
+    end
+
+    # Generate a single solvable puzzle
+    def generate_solvable_puzzle
+        completed_puzzle = generate_completed_puzzle
+        byebug if !completed_puzzle && @failed_puzzles.last.valid?
+        return false unless completed_puzzle
+        reduced_puzzle = reduce_puzzle(completed_puzzle, 30)
+        reduced_puzzle
     end
 
     # Generate a completed puzzle matrix by filling in values iteratively and using the solver to evaluate options. If we get stuck, start over.
     def generate_completed_puzzle
-        @completion_stuck = false
         puts "Building completed matrix"
+
         # Start with an empty puzzle and fill the first block with a random permutation of 1-9
         @working_puzzle = Puzzle.new
         arr = randomize(Sudoku::OPTIONS_RANGE)
-        @working_puzzle.blocks_array.first.cells.each do |cell|
+        @working_puzzle.block(1, 1).cells.each do |cell|
             value = arr.pop()
-            @working_puzzle.confirm_cell(value, cell.ci, cell.cj)
+            cell.confirm(value)
             print "."
         end
 
-        # Evaluate initial options for all cells based on the first block and count confirmed values
-        @working_puzzle.evaluate_initial_options
-        value_count = @working_puzzle.count_confirmed_values
+        # Evaluate the puzzle with the solver to fill in any cells that can be confirmed based on the initial block values.
+        PuzzleSolver.new(@working_puzzle).solve
+        value_count = @working_puzzle.confirmed_count
+        @working_puzzle.print_values
+
+        @working_puzzle.valid? ? (puts "Initial block filled with valid values") : (puts "Initial block filled but resulted in invalid puzzle")
+        puts ""
+
+        puts "Filled in #{value_count} values after initial block and solver evaluation. Now trying to iteratively fill in values until the puzzle is complete..."
 
         # Iteratively fill in values using the solver until the puzzle is complete or we get stuck
-
-
-        n = 1
+        n = 0
         passes_with_no_new_values = 0
         until @working_puzzle.complete_and_valid? || n == 50 do
             n += 1
-            value_count = @working_puzzle.count_confirmed_values
+            values_found = 0
 
             # Start with the groups that have the fewest remaining values, and try to confirm values in those cells
-            groups = @working_puzzle.groups.select { |g| g.incomplete? }.sort_by { |g|g.remaining_values.length }
+            groups = sort_groups_by_remaining_values(@working_puzzle)
 
             groups.each do |group|
                 found_value = false
-
-                group.cells.each do |cell|
+                group.cells.sort_by { |cell| cell.options.length }.each do |cell|
                     next unless cell.empty? # Skip already confirmed cells
                     cached_puzzle = @working_puzzle.duplicate # Cache the current state of the puzzle before trying to fill the cell
 
                     randomize(cell.options).each do |value|
                         # Try each of the cell's options and use the solver to evaluate the resulting puzzle.
-                        @working_puzzle.confirm_cell(value, cell.ci, cell.cj)
+                        cell.confirm(value)
                         PuzzleSolver.new(@working_puzzle).solve
                         if @working_puzzle.valid?
-                            # If the puzzle is still valid, break out of the options loop and continue filling other cells
-                            print "."
+                            values_found = @working_puzzle.confirmed_count
+                            values_found += 1
+                            print "-"
+                            # If the puzzle is still valid, break out of the loops to re-sort the groups
                             found_value = true
                             break
                         else
                             # If the puzzle is invalid, revert to the cached state and try the next option
-                            # byebug unless @stop
                             @working_puzzle = cached_puzzle.duplicate
                         end
                     end
-                    if found_value
-                        print "."
-                        break # If we found a value for this cell, break out of the blank_cells loop to re-sort the groups.
-                    else
-                        print "x"
-                        next # Otherwise, try the next cell in this group.
-                    end
+                    break if found_value # If we found a value for this cell, break out of the
                 end
-                found_value ? break : next # If we found a value in this group, break and re-sort the groups based on remaining values. Otherwise, try the next group.
+                break if found_value
             end
-            if value_count == @working_puzzle.count_confirmed_values # If we went through all the groups and couldn't confirm any new values, we're stuck. Abandon this puzzle.
+
+            if values_found == 0 # If we went through all the groups and couldn't confirm any new values, we're stuck. Abandon this puzzle.
                 passes_with_no_new_values += 1
+                @working_puzzle.bust_info_cache
                 @working_puzzle.reevaluate_all_options
-                puts "\nNo new values found in this pass. Stuck? #{passes_with_no_new_values >= 5}"
-                break if passes_with_no_new_values >= 5
+                byebug if @working_puzzle.valid? && !@working_puzzle.complete?
+                puts "\nNo new values found in this pass. Stuck? #{passes_with_no_new_values >= 3}"
+                break if passes_with_no_new_values >= 3
             else
                 passes_with_no_new_values = 0
             end
@@ -128,7 +133,8 @@ class PuzzleGenerator
             puts "\n successfully made completed matrix"
             @working_puzzle
         else
-            puts "\n failed to make completed matrix"
+            puts "\n failed to make completed matrix. Filled in #{value_count} values before getting stuck."
+            @working_puzzle.print_values
             @failed_puzzles << @working_puzzle.duplicate
             increment_failed_completion_count
             false
@@ -137,67 +143,79 @@ class PuzzleGenerator
 
     # Try to reduce a completed puzzle matrix down to a puzzle with the given number of confirmed values by blanking cells and using the solver to check if the puzzle is still solvable. If we get stuck, start over.
     def reduce_puzzle(puzzle, num)
-        @stuck_reduction = false
+        @completed_puzzle = puzzle
         puts "reducing puzzle to #{num} confirmed values"
         @working_puzzle =  puzzle.duplicate
         @reduced_puzzle = nil
-        n = 0
-        value_count = @working_puzzle.count_confirmed_values
+        value_count = @working_puzzle.confirmed_count
 
-        # Randomly blank cells and check if the puzzle is still solvable until we reach the target number of confirmed values or get stuck
-        10.times do
-            until @working_puzzle.count_confirmed_values == num || n == 5
-                n += 1
-                value_count = @working_puzzle.count_confirmed_values
-                randomize(@working_puzzle.cells.select { |cell| !cell.empty? }).each_with_index do |cell, index|
-                    cached_puzzle = @working_puzzle.duplicate # Cache the current state of the puzzle before blanking the cell
-
+        n = 1
+        passes_with_no_new_blanks = 0
+        until @working_puzzle.confirmed_count == num || n == 50
+            n += 1
+            value_count = @working_puzzle.confirmed_count
+            # sort groups by fewest remaining values and try to blank cells in those groups first, since they're more likely to yield a solvable puzzle when blanked.
+            groups = sort_groups_by_remaining_values(@working_puzzle)
+            groups.each do |group|
+                blanked_cell = false
+                randomize(group.cells).each do |cell|
+                    next if cell.empty? # Skip already blank cells
+                    cached_puzzle = @working_puzzle.duplicate # Cache the current state of the puzzle before trying to blank the cell
                     @working_puzzle.cell(cell.ci, cell.cj).reset
-
                     success = PuzzleSolver.new(@working_puzzle, isolate: true).solve
                     if success
+                        # if the puzzle is still solvable, keep the cell blank and break out of the loop to re-sort the groups and try blanking other cells.
                         print "."
-                        break if @working_puzzle.count_confirmed_values == num
+                        blanked_cell = true
+                        break if @working_puzzle.confirmed_count == num
                     else
-                        @working_puzzle = cached_puzzle.duplicate if !success
+                        # if the puzzle is unsolvable, revert to the cached state and try blanking the next cell.
+                        print "x"
+                        @working_puzzle = cached_puzzle.duplicate
                     end
                 end
-                @working_puzzle.count_confirmed_values == value_count ? @stuck_reduction = true : next # If we went through all the cells and couldn't blank any new cells, we're stuck. Abandon this reduction attempt.
-                break if @stuck_reduction
+                if blanked_cell
+                    print "."
+                    break # If we successfully blanked a cell in this group, break and re-sort the groups based on remaining values.
+                else
+                    print "x"
+                    next # Otherwise, try the next cell in this group.
+                end
             end
-
-            if @working_puzzle.count_confirmed_values == num
-                # we successfully reduced to the target number of confirmed values, save the reduced puzzle and break out of the loop.
-                puts "\n reduced puzzle successfully"
-                increment_created_matrices_count
-                @reduced_puzzle = @working_puzzle.duplicate
-                break
+            if value_count == @working_puzzle.confirmed_count # If we went through all the groups and couldn't blank any new cells, we're stuck. Abandon this reduction attempt.
+                passes_with_no_new_blanks += 1
+                @working_puzzle.bust_info_cache
+                @working_puzzle.reevaluate_all_options
+                puts "\nNo new cells blanked in this pass. Stuck? #{passes_with_no_new_blanks >= 5}"
+                break if passes_with_no_new_blanks >= 5
             else
-                # we failed to reduce to the target number of confirmed values, increment the failed reduction count and try again with a fresh copy of the completed puzzle. If we got stuck, increment the stuck reduction count as well.
-                puts "\nfailed to reduce puzzle #{'- Got stuck' if @stuck_reduction}"
-                increment_failed_reduction_count
-                increment_stuck_reduction_count if @stuck_reduction
-                @working_puzzle = puzzle.duplicate
-                false
+                passes_with_no_new_blanks = 0
             end
         end
-        @reduced_puzzle
+        if @working_puzzle.confirmed_count == num
+            # we successfully reduced to the target number of confirmed values, save the reduced puzzle and break out of the loop.
+            puts "\n reduced puzzle successfully"
+            increment_created_matrices_count
+            @reduced_puzzle = @working_puzzle.duplicate
+            @reduced_puzzle
+        else
+            # we failed to reduce to the target number of confirmed values, increment the failed reduction count and try again with a fresh copy of the completed puzzle. If we got stuck, increment the stuck reduction count as well.
+            puts "\n failed to reduce puzzle to target confirmed count. Reduced to #{value_count} values before getting stuck."
+            @working_puzzle.print_values
+            increment_failed_reduction_count
+            @working_puzzle = @completed_puzzle.duplicate
+            false
+        end
     end
+
+    # -- utility methods --
 
     def increment_failed_completion_count
         @failed_completion_count += 1
     end
 
-    def increment_stuck_completion_count
-        @stuck_completion_count += 1
-    end
-
     def increment_failed_reduction_count
         @failed_reduction_count += 1
-    end
-
-    def increment_stuck_reduction_count
-        @stuck_reduction_count += 1
     end
 
     def increment_created_matrices_count
@@ -207,16 +225,16 @@ class PuzzleGenerator
     def reset_counts
         @created_puzzles_count = 0
         @failed_completion_count = 0
-        @stuck_completion_count = 0
         @failed_reduction_count = 0
-        @stuck_reduction_count = 0
     end
 
     def print_counts
         puts "Completed matrices: #{@created_puzzles_count}"
         puts "Failed completions: #{@failed_completion_count}"
-        puts "Stuck completions: #{@stuck_completion_count}"
         puts "Failed reductions: #{@failed_reduction_count}"
-        puts "Stuck reductions: #{@stuck_reduction_count}"
+    end
+
+    def sort_groups_by_remaining_values(puzzle)
+        puzzle.groups.sort_by { |g| g.remaining_values.length }
     end
 end

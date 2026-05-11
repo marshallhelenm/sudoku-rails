@@ -75,4 +75,62 @@ class GroupTest < Minitest::Test
     @group.forbid_value(2)
     refute @group.cells.any? { |c| c.options.include?(2) }, "forbid_value should remove the value from all cell options"
   end
+
+  def test_validate_cell_order
+    # This method is meant to be overridden in subclasses, so it should return true by default
+    assert @group.validate_cell_order(@group.cells), "validate_cell_order should return true by default"
+  end
+
+  def test_validate_cell_order_for_row
+    row = @puzzle.row(0)
+    assert row.validate_cell_order(row.cells), "Row should validate correct cell order"
+    # Create an invalid order by shuffling the cells
+    shuffled_cells = row.cells.shuffle
+    refute row.validate_cell_order(shuffled_cells), "Row should not validate incorrect cell order"
+  end
+
+  def test_validate_cell_order_for_column
+    column = @puzzle.column(0)
+    assert column.validate_cell_order(column.cells), "Column should validate correct cell order"
+    # Create an invalid order by shuffling the cells
+    shuffled_cells = column.cells.shuffle
+    refute column.validate_cell_order(shuffled_cells), "Column should not validate incorrect cell order"
+  end
+
+  def test_validate_cell_order_for_block
+    block = @puzzle.block(0, 0)
+    assert block.validate_cell_order(block.cells), "Block should validate correct cell order"
+    # Create an invalid order by shuffling the cells
+    shuffled_cells = block.cells.shuffle
+    refute block.validate_cell_order(shuffled_cells), "Block should not validate incorrect cell order"
+  end
+
+  def test_find_cell_by_coordinates_for_row
+    cell = @group.find_cell_by_coordinates([ 0, 1 ])
+    assert_equal @group.cells[1].coordinates, cell.coordinates, "Should find the correct cell by coordinates in the row"
+  end
+
+  def test_find_cell_by_coordinates_for_column
+    column = @puzzle.column(0)
+    cell = column.find_cell_by_coordinates([ 1, 0 ])
+    assert_equal column.cells[1].coordinates, cell.coordinates, "Should find the correct cell by coordinates in the column"
+  end
+
+  def test_find_cell_by_coordinates_for_block
+    block = @puzzle.block(0, 0)
+    cell = block.find_cell_by_coordinates([ 1, 1 ])
+    assert_equal block.cells[4].coordinates, cell.coordinates, "Should find the correct cell by coordinates in the block"
+  end
+
+  def test_group_number_and_type
+    row = @puzzle.row(0)
+    column = @puzzle.column(0)
+    block = @puzzle.block(0, 0)
+    assert_equal 0, row.group_number, "Row group number should match the row index"
+    assert_equal :row, row.group_type, "Row group type should be :row"
+    assert_equal 0, column.group_number, "Column group number should match the column index"
+    assert_equal :column, column.group_type, "Column group type should be :column"
+    assert_equal 0, block.group_number, "Block group number should be calculated from block indices"
+    assert_equal :block, block.group_type, "Block group type should be :block"
+  end
 end

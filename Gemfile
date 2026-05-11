@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+# For test mocks
+gem "minitest", "~> 5.25"
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.3"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
@@ -65,6 +67,8 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "byebug", "~> 13.0", groups: [:development, :test]
+gem "byebug", "~> 13.0", groups: [ :development, :test ]
 
 gem "requestjs-rails", "~> 0.0.14"
+
+gem "sqids", "~> 0.2.2"

@@ -54,4 +54,9 @@ class BlockTest < Minitest::Test
     expected_values = @block.cells.map(&:value)
     assert_equal expected_values, @block.values, "values should return the values of all cells in the block"
   end
+
+  def test_inspect
+    expected_string = "#<Block row_number=1, column_number=1, cell_coordinates=#{ @block.coordinate_set }>"
+    assert_equal expected_string, @block.inspect, "inspect should return a string representation of the block with its coordinates and cell positions"
+  end
 end

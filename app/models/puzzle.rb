@@ -18,26 +18,17 @@
 #   siblings_of(cell)                            - Get all siblings of a cell
 
 class Puzzle
-        # Generic method to fetch from cache or compute and store the value
-        # key: symbol for the cache key
-        # &block: logic to compute the value if not cached
-        def cache_or_compute(key)
-            if @cache[key][:current]
-                @cache[key][:value]
-            else
-                value = yield
-                @cache[key][:value] = value
-                @cache[key][:current] = true
-                value
-            end
-        end
     require "matrix"
     require "set"
+    require "sqids"
     require_relative "sudoku"
     require_relative "cell"
     require_relative "group"
+    require_relative "row"
+    require_relative "column"
     require_relative "block"
     require_relative "sudoku_cache"
+    @@sqids = Sqids.new(salt: "sudoku-puzzle", alphabet: "0123456789abcdef", min_length: 4)
 
     # Initialize a Puzzle with optional values, options, or a source matrix.
     # Raises ArgumentError if input types are invalid.
@@ -61,6 +52,8 @@ class Puzzle
             Cell.new(puzzle: self, value: value, ci: ci, cj: cj, options: cell_options)
         end
 
+        @id = @@sqids.encode([ Time.now.to_i ])
+
         @collections_cache = SudokuCache.new({
             groups: { current: false, value: nil },
             blocks: { current: false, value: nil },
@@ -80,11 +73,15 @@ class Puzzle
         })
     end
 
+    attr_reader :matrix, :id
+
+    def inspect
+        "#<Puzzle id=#{@id} confirmed_count=#{confirmed_count} blank_cells=#{count_blank_cells}>"
+    end
+
     def confirmed_count
         @cache.cache_or_compute(:confirmed_count) { count_confirmed_values }
     end
-
-    attr_reader :matrix
 
     # -- Accessor methods for cells, rows, columns, blocks, and groups --
 
@@ -303,16 +300,16 @@ class Puzzle
     def build_rows
       rows_hash = {}
       Sudoku::COORD_RANGE.each do |ci|
-        rows_hash[ci] = Group.new(@matrix.row(ci).to_a)
+        rows_hash[ci] = Row.new(@matrix.row(ci).to_a)
       end
       rows_hash
     end
 
-    # Build columns as Group objects and return a hash mapping column index to Group
+    # Build columns as Column objects and return a hash mapping column index to Column
     def build_columns
       columns_hash = {}
       Sudoku::COORD_RANGE.each do |cj|
-        columns_hash[cj] = Group.new(@matrix.column(cj).to_a)
+        columns_hash[cj] = Column.new(@matrix.column(cj).to_a)
       end
       columns_hash
     end
