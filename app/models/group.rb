@@ -54,6 +54,10 @@ class Group
         group_cache.cache_or_compute(:values) { cells.collect { |cell| cell.value } }
     end
 
+    def values_array
+        group_cache.cache_or_compute(:values_array) { cells.collect { |cell| cell.value } }
+    end
+
     def options_array
         group_cache.cache_or_compute(:options_array) { cells.collect { |c| c.options.to_a } }
     end

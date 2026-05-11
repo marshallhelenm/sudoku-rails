@@ -6,7 +6,8 @@ class PuzzleSolver
     # @param puzzle [Puzzle] the puzzle to solve
     # @param isolate [Boolean] whether to solve a duplicate of the puzzle
     # @param display [Boolean] whether to broadcast solving steps
-    def initialize(puzzle, isolate: false, display: false)
+    # @param print [Boolean] whether to print solving steps to the console
+    def initialize(puzzle, isolate: false, display: false, print: false)
         unless puzzle.is_a?(Puzzle)
             raise ArgumentError, "puzzle must be a Puzzle"
         end
@@ -25,6 +26,7 @@ class PuzzleSolver
         @display = display
         @solve_time = nil
         @family_handler = FamilyHandler.new(self, @puzzle)
+        @print = print
     end
 
     attr_reader :solve_time
@@ -34,7 +36,6 @@ class PuzzleSolver
     def solve
         prepare_puzzle
         @solve_time = time_solving { main_solving_loop }
-        byebug
         @puzzle.complete_and_valid?
     end
 
@@ -67,10 +68,8 @@ class PuzzleSolver
     def try_solving_strategies
         low_hanging_fruit
         return true if @puzzle.complete?
-        puts "Looking for families..."
         @family_handler.find_families_in_groups
         return true if @puzzle.complete?
-        puts "Looking for extended families..."
         @family_handler.find_extended_families_in_groups
         return true if @puzzle.complete?
         @puzzle.update_confirmed_count
@@ -81,11 +80,10 @@ class PuzzleSolver
     # @param cell [Cell] The cell to confirm
     # @param value [Integer] The value to assign
     def confirm_cell(cell, value)
-        puts "Confirming cell (#{cell.ci}, #{cell.cj}) as #{value}!"
+        print_to_console { print "⭐️" }
         cell.confirm(value)
         broadcast_cell(cell.ci, cell.cj) if @display
-        find_cells_that_can_only_be_one_value
-        find_groups_where_only_one_cell_can_be_a_given_value
+        find_sibling_fruit(cell)
     end
 
     def broadcast_cell(ci, cj)
@@ -98,20 +96,25 @@ class PuzzleSolver
 
     def low_hanging_fruit
         # keep looking for cells with only one option and groups where a value can only go in one cell until there are no more to find
-        puts "Looking for low hanging fruit..."
         still_searching = true
         until !still_searching do
-            print "."
             still_searching = find_cells_that_can_only_be_one_value || find_groups_where_only_one_cell_can_be_a_given_value
         end
-        puts ""
+    end
+
+    # finds low hanging fruit among a cell's siblings
+    def find_sibling_fruit(cell)
+        groups = cell.groups
+        # check siblings in each group for low hanging fruit
+        find_cells_that_can_only_be_one_value(groups) || find_groups_where_only_one_cell_can_be_a_given_value(groups)
     end
 
     # Finds and fills cells that have only one possible value.
     # @return [Boolean] true if any cell was filled, false otherwise
-    def find_cells_that_can_only_be_one_value
+    def find_cells_that_can_only_be_one_value(groups = nil)
         found_new = false
-        @puzzle.groups.each do |group|
+        groups ||= @puzzle.groups
+        groups.each do |group|
             # do this by looking at 'blank_cells' since that is cached and won't require evaluating options for cells that are already filled, or haven't been touched since they were last looked at
             group.blank_cells.each do |cell|
                 if cell.options.length == 1
@@ -123,12 +126,14 @@ class PuzzleSolver
         found_new
     end
 
+
     # Finds and fills cells in groups (row, column, block) where a value can only go in one cell.
     # @return [Boolean] true if any cell was filled, false otherwise
-    def find_groups_where_only_one_cell_can_be_a_given_value
+    def find_groups_where_only_one_cell_can_be_a_given_value(groups = nil)
+        groups ||= @puzzle.groups
         # check each row, column, and block to see if only one of its cells can be N
         found_new = false
-        @puzzle.groups.each do |group|
+        groups.each do |group|
             group.remaining_values.each do |num|
                 only_possible_cell = find_only_possible_cell_for_value_in_group(group, num)
                 if only_possible_cell
@@ -155,5 +160,12 @@ class PuzzleSolver
             end
         end
         only_possible_cell&.coordinates
+    end
+
+    private
+
+    def print_to_console
+        return unless @print
+        yield
     end
 end

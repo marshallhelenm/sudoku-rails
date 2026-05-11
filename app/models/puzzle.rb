@@ -76,7 +76,7 @@ class Puzzle
     attr_reader :matrix, :id
 
     def inspect
-        "#<Puzzle id=#{@id} confirmed_count=#{confirmed_count} blank_cells=#{count_blank_cells}>"
+        "#<Puzzle id=#{@id} confirmed_count=#{confirmed_count} blank_cells=#{count_blank_cells} values=#{values_array}>"
     end
 
     def confirmed_count
@@ -250,6 +250,7 @@ class Puzzle
     end
 
     def print_values
+        puts ""
         rows.values.each do |row|
             row.cells.each do |cell|
                 print cell.value == 0 ? "." : cell.value
@@ -263,6 +264,7 @@ class Puzzle
                 puts "------+-------+------"
             end
         end
+        nil
     end
 
     def bust_info_cache
