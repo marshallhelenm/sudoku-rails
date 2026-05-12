@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus";
 import { patch } from "@rails/request.js";
 
 export default class extends Controller {
-  static targets = ["cell"];
+  static targets = ["cell", "messageCard"];
 
   static values = {
     val: Number,
@@ -26,12 +26,28 @@ export default class extends Controller {
   }
 
   async solve() {
+    const speed = event.currentTarget.dataset.speed || "fast";
+    if (speed === "slow") {
+      this.showOptionsValue = true;
+      this.cellTargets.forEach((cell) => {
+        if (cell.dataset.value !== "0") return;
+        cell
+          .querySelector(".cell-options")
+          .classList.toggle("d-none", !this.showOptionsValue);
+        cell
+          .querySelector(".cell-value")
+          .classList.toggle("d-none", this.showOptionsValue);
+      });
+      this.clearEditMode();
+    }
     const response = await patch("/solve_puzzle", {
       responseKind: "turbo-stream",
+      body: { speed: event.currentTarget.dataset.speed || "fast" },
     });
   }
 
   async newPuzzle() {
+    this.closeResultCard();
     this.showSpinner();
     await patch("/new_puzzle", {
       responseKind: "turbo-stream",
@@ -69,7 +85,6 @@ export default class extends Controller {
   }
 
   changeDifficulty(e) {
-    console.log("Changing difficulty to", e.target.value);
     const difficulty = e.target.value;
     const url = new URL(window.location);
     url.searchParams.set("difficulty", difficulty);
@@ -109,7 +124,6 @@ export default class extends Controller {
     let valuesCookie = this.loadValuesCookie() || {};
     valuesCookie[cell.dataset.row][cell.dataset.col] = valueInteger;
     document.cookie = "values=" + JSON.stringify(valuesCookie) + "; path=/";
-    console.log("Updated values cookie:", this.loadValuesCookie());
   }
 
   updateCellOptions(cell, option) {
@@ -193,6 +207,11 @@ export default class extends Controller {
       cell.querySelector(".cell-options").classList.add("d-none");
       cell.querySelector(".cell-value").classList.remove("d-none");
       cell.querySelector(".cell-corner-triangle").classList.remove("d-none");
+      this.closeResultCard();
     });
+  }
+
+  closeResultCard() {
+    this.messageCardTarget.classList.add("d-none");
   }
 }

@@ -1,6 +1,6 @@
 class SudokuController < ApplicationController
   include ApplicationHelper
-  def puzzler
+  def sudoku_solver
     @puzzle = load_game_state
     @difficulty = params[:difficulty] || "medium"
     @puzzle = @puzzle.present? ? @puzzle : set_new_puzzle(@difficulty || "medium")
@@ -19,9 +19,17 @@ class SudokuController < ApplicationController
 
   def solve_puzzle
     @puzzle = load_game_state
-    solver = PuzzleSolver.new(@puzzle, display: true)
+    if @puzzle.confirmed_count < 17
+      render turbo_stream: turbo_stream.replace("message_card", partial: "sudoku/message_card", locals: { message_type: "warning", message_text: "This puzzle has fewer than 17 clues, which is below the known threshold for a unique solution!" })
+      return
+    end
+    solver = PuzzleSolver.new(@puzzle, display: true, slow_display: params[:speed] == "slow")
     success = solver.solve
-    render turbo_stream: turbo_stream.replace("result", partial: "sudoku/result", locals: { success: success.to_s })
+    render turbo_stream: [
+      turbo_stream.replace("message_card", partial: "sudoku/message_card", locals: { message_type: success ? "" : "failure", message_text: success ? "" : "Oops, I couldn't solve that puzzle." }),
+      turbo_stream.replace("game_board", partial: "sudoku/game_board", locals: { puzzle: @puzzle, solved: true })
+    ]
+    save_game_state(@puzzle, true)
   end
 
   def generate_puzzles

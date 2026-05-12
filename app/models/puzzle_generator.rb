@@ -1,5 +1,4 @@
 class PuzzleGenerator
-    include ApplicationHelper
     require_relative "sudoku"
     require "matrix"
 
@@ -66,8 +65,11 @@ class PuzzleGenerator
 
     # Generate a single solvable puzzle
     def generate_solvable_puzzle(difficulty: "medium")
+        # start by generating a completed puzzle
         completed_puzzle = generate_completed_puzzle
         return false unless completed_puzzle
+
+        # then try to reduce it to a puzzle with a unique solution and the target number of confirmed values based on the difficulty level. If we fail to reduce it, start over with a new completed puzzle.
         num_confirmed_values =
             case @difficulty
             when "easy"
@@ -87,7 +89,7 @@ class PuzzleGenerator
     def generate_completed_puzzle
         puts "Building completed matrix"
 
-        # Start with an empty puzzle and fill the first block with a random permutation of 1-9
+        # Start with an empty puzzle and fill the first row with a random permutation of 1-9
         @working_puzzle = Puzzle.new
         arr = randomize(Sudoku::OPTIONS_RANGE)
         @working_puzzle.row(0).cells.each do |cell|
@@ -96,7 +98,7 @@ class PuzzleGenerator
         end
         print_to_console { print "⭐️" }
 
-        # Evaluate the puzzle with the solver to fill in any cells that can be confirmed based on the initial block values.
+        # Evaluate the puzzle with the solver to fill in any cells that can be confirmed based on the initial row values.
         PuzzleSolver.new(@working_puzzle, print: true).solve
         value_count = @working_puzzle.confirmed_count
 
@@ -112,12 +114,13 @@ class PuzzleGenerator
 
             groups.each do |group|
                 found_value = false
+                # sort the cells in the group by fewest options to try to confirm values in those cells first
                 group.cells.sort_by { |cell| cell.options.length }.each do |cell|
                     next unless cell.empty? # Skip already confirmed cells
                     cached_puzzle = @working_puzzle.duplicate # Cache the current state of the puzzle before trying to fill the cell
 
+                    # Try each of the cell's options and use the solver to evaluate the resulting puzzle.
                     randomize(cell.options).each do |value|
-                        # Try each of the cell's options and use the solver to evaluate the resulting puzzle.
                         cell.confirm(value)
                         PuzzleSolver.new(@working_puzzle, print: true).solve
                         if @working_puzzle.valid?

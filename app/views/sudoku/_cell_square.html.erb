@@ -1,9 +1,9 @@
-<%# locals: (value:0, ci:0, cj:0, options:[] ) %>
+<%# locals: (value:0, ci:0, cj:0, options:[], solved:false, show_options:false ) %>
 <% i_class = "ci-#{ci}" %>
 <% j_class = "cj-#{cj}" %>
 <%= turbo_frame_tag "cell_#{ci}_#{cj}" do %>
     <div 
-        class="cell <%= i_class + " " + j_class%>" 
+        class="cell <%= i_class + " " + j_class%> <%= solved ? "solved-cell-#{value}" : "" %>" 
         data-game-target="cell"
         data-value="<%= value %>"
         data-row="<%= ci %>"
@@ -14,10 +14,10 @@
             class="cell-corner-triangle <%= value == 0 ? "" : "d-none"%>" 
             data-action="click->game#toggleCellOptions" 
         ></div>
-        <div class="cell-value">
+        <div class="cell-value <%= show_options && value == 0 ? "d-none" : "" %>">
             <%= value unless value == 0 %>
         </div>
-        <div class="d-none cell-options">
+        <div class="cell-options <%= show_options && value == 0 ? "" : "d-none" %>">
             <% options.each do |opt| %>
                 <%= opt %>
             <% end %>

@@ -196,20 +196,23 @@ class Cell
     end
 
     # Remove multiple options from the cell's options set
-    def forbid_multiple(options_to_forbid)
+    def forbid_multiple(options_to_forbid, display_speed: nil)
         options_to_forbid.each { |opt| self.options.delete(opt) }
+        Sudoku.broadcast_cell(self, display: display_speed.present?, display_speed: display_speed) if display_speed.present? && options_to_forbid.any?
         self.options
     end
 
     # Remove a single option from the cell's options set
-    def forbid(option_to_forbid)
+    def forbid(option_to_forbid, display_speed: nil)
+        has_option = self.options.include?(option_to_forbid)
         self.options.delete(option_to_forbid)
+        Sudoku.broadcast_cell(self, display: display_speed.present?, display_speed: display_speed) if display_speed.present? && has_option
         self.options
     end
 
     # Forbid this cell's value in all sibling cells in the matrix
-    def forbid_siblings
-        siblings.each { |sibling| sibling.forbid(self.value) }
+    def forbid_siblings(display_speed: nil)
+        siblings.each { |sibling| sibling.forbid(self.value, display_speed: display_speed) }
     end
 
     # Evaluate and return possible options for this cell given the matrix.
@@ -234,7 +237,7 @@ class Cell
         self.evaluate_options(true)
         confirmed = self.assign_value(value)
         return false unless confirmed
-        self.forbid_siblings
+        self.forbid_siblings(display_speed: @display_speed)
         true
     end
 

@@ -1,29 +1,77 @@
-# README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+# Sudoku-a
 
-Things you may want to cover:
+A web-based Sudoku puzzle application built with Ruby on Rails. This project began with the desire to code a program that would solve Sudoku puzzles, not necessarily in the most efficient way, but in a way that models a human-like approach to the puzzle.
 
-* Ruby version
+## Features
 
-* System dependencies
+- Play Sudoku puzzles of varying difficulty
+- Solve puzzles automatically
+- Interactive game board with Turbo/Stimulus for SPA-like experience
+- Puzzle logic and validation in Ruby
+- JSON-based puzzle storage
 
-* Configuration
+## Getting Started
 
-* Database creation
+### Prerequisites
 
-* Database initialization
+- Ruby (compatible with Rails 8.1.3)
+- Bundler
+- Node.js (for asset pipeline, if needed)
+- SQLite3 (default database)
 
-* How to run the test suite
+### Installation
 
-* Services (job queues, cache servers, search engines, etc.)
+1. Clone the repository:
+	```sh
+	git clone <repo-url>
+	cd sudoku-a
+	```
 
-* Deployment instructions
+2. Install dependencies:
+	```sh
+	bundle install
+	```
 
-* ...
+3. Set up the database:
+	```sh
+	rails db:setup
+	```
 
+4. (Optional) Generate new puzzles:
+	```sh
+	rake puzzles:generate_json
+	```
 
-MODELS:
-Game: Holds the logic and values involved in solving a puzzle
-Puzzle: Holds the values of the puzzle, and logic for evaluating those values (such as number of empty cells)
+5. Start the server:
+	```sh
+	rails s
+	```
+
+6. Visit `http://localhost:3000/sudoku/solver` in your browser.
+
+## Project Structure
+
+- `app/models/` — Core puzzle logic (`sudoku.rb`, `puzzle.rb`, `puzzle_solver.rb`, etc.)
+- `app/controllers/` — Main controller: `sudoku_controller.rb`
+- `app/views/sudoku/` — Game board and UI partials
+- `app/assets/puzzle_matrices.json` — JSON file with puzzle data
+- `Gemfile` — Rails, Turbo, Stimulus, and other dependencies
+
+## Usage
+
+- Play Sudoku puzzles in your browser.
+- Generate new puzzles or solve existing ones.
+- The game board is interactive and updates via Turbo Streams.
+
+## Testing
+
+Run the test suite with:
+```sh
+rails test
+```
+
+## Deployment
+
+- Dockerfile included for containerized deployment.
+- See `config/deploy.yml` for deployment configuration.
