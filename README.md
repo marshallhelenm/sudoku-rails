@@ -75,3 +75,6 @@ rails test
 
 - Dockerfile included for containerized deployment.
 - See `config/deploy.yml` for deployment configuration.
+
+<img width="799" height="690" alt="Screenshot 2026-05-11 at 9 13 05 PM" src="https://github.com/user-attachments/assets/90ed4292-603b-4f19-9beb-eaff885d83d9" />
+
