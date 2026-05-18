@@ -1,11 +1,9 @@
 .green-bg {
-  background-color: #657e2e; /* Light green background */
-  opacity: 0.9;
+  background-color: rgb(101, 126, 46, 0.9);
 }
 
 .yellow-bg {
-  background-color: #b36309;
-  opacity: 0.9;
+  background-color: rgb(179, 99, 9, 0.9);
 }
 
 .grey-bg {
