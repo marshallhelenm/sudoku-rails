@@ -1,0 +1,26 @@
+<%# locals: (value:0, ci:0, cj:0, options:[], solved:false, show_options:false ) %>
+<% i_class = "ci-#{ci}" %>
+<% j_class = "cj-#{cj}" %>
+<%= turbo_frame_tag "cell_#{ci}_#{cj}" do %>
+    <div 
+        class="cell <%= i_class + " " + j_class%> <%= solved ? "solved-cell-#{value}" : "" %>" 
+        data-sudoku--game-target="cell"
+        data-value="<%= value %>"
+        data-row="<%= ci %>"
+        data-col="<%= cj %>"
+        data-action="click->sudoku--game#toggleEditMode"
+        >
+        <div 
+            class="cell-corner-triangle <%= value == 0 ? "" : "d-none"%>" 
+            data-action="click->sudoku--game#toggleCellOptions" 
+        ></div>
+        <div class="cell-value <%= show_options && value == 0 ? "d-none" : "" %>">
+            <%= value unless value == 0 %>
+        </div>
+        <div class="cell-options <%= show_options && value == 0 ? "" : "d-none" %>">
+            <% options.each do |opt| %>
+                <%= opt %>
+            <% end %>
+        </div>
+    </div>
+<% end %>

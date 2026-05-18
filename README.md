@@ -18,7 +18,7 @@ A web-based Sudoku puzzle application built with Ruby on Rails. This project beg
 - Ruby (compatible with Rails 8.1.3)
 - Bundler
 - Node.js (for asset pipeline, if needed)
-- SQLite3 (default database)
+- PostgreSQL
 
 ### Installation
 
