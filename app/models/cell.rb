@@ -10,7 +10,6 @@
 #   puzzle  - Reference to the parent puzzle (required)
 #
 # Provides validation for all attributes and utility methods for Sudoku logic.
-require "byebug"
 require "sqids"
 
 class Cell
