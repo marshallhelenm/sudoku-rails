@@ -78,11 +78,11 @@ export default class extends Controller {
     );
   }
 
-  async generatePuzzles() {
-    const response = await patch("/generate_puzzles", {
-      responseKind: "turbo-stream",
-    });
-  }
+  // async generatePuzzles() {
+  //   const response = await patch("/generate_puzzles", {
+  //     responseKind: "turbo-stream",
+  //   });
+  // }
 
   changeDifficulty(e) {
     const difficulty = e.target.value;

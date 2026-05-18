@@ -6,7 +6,6 @@
 
 # Ignore bundler config.
 /.bundle
-
 # Ignore all environment files.
 /.env*
 
@@ -33,3 +32,6 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+/app/assets/.DS_Store
+/.byebug_history
+/node_modules

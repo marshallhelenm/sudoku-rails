@@ -1,0 +1,23 @@
+<div class="section grey-knit-bg" data-anchor="projects">
+    <div class="grey-bg block">
+      <%= render "up_arrow" %>
+      <h1 style="color: white; position: absolute; top: 20px; font-size: 3em;">Hobby Projects</h1>
+      <div class="projects-container">
+        <%= render "project_card", project: {
+          title: "Sudoku Solver",
+          image: "sudoku.png",
+          description: "A web application that allows users to input a Sudoku puzzle and provides a solution using a human-like approach modeled in Ruby.",
+          github_link: "https://github.com/marshallhelenm/sudoku-rails",
+          live_link: "/sudoku_solver"
+        } %>
+        <%= render "project_card", project: {
+          title: "Memetic",
+          image: "question.png",
+          description: "A web-based multiplayer game inspired by the classic “Guess Who?”, but with memes instead of cartoon faces! Built with Vite + React, react-use-websocket for real-time communication, and Material UI for sleek styling.",
+          github_link: "https://github.com/marshallhelenm/memetic",
+          live_link: "https://memetic-app-d0ed892a999c.herokuapp.com/"
+        } %>
+      </div>
+      <%= render "down_arrow" %>
+    </div>
+</div>

@@ -1,0 +1,33 @@
+<div class="section portfolio-section green-knit-bg" data-anchor="name_card">
+    <div class="green-bg block">
+      <h1 id="name">El Marshall</h1>
+      <h3 class="subheading">Full Stack Developer</h3>
+      <div class="contact-icons">
+        <div class="contact-item">
+            <%= link_to "https://www.linkedin.com/in/marshallhelenm/", target: "_blank" do %>
+            <%= image_tag "linkedin-ico.png", alt: "LinkedIn", class: "contact-icon" %>
+            <% end %>
+            <p class="contact-label">LinkedIn</p>
+        </div>
+        <div class="contact-item">
+          <%= link_to "https://github.com/marshallhelenm/", target: "_blank" do %>
+            <%= image_tag "github-ico.png", alt: "GitHub", class: "contact-icon" %>
+          <% end %>
+          <p class="contact-label">GitHub</p>
+        </div>
+        <div class="contact-item">
+          <a href="#resume" target="_blank">
+            <%= image_tag "resume.png", alt: "Resume", class: "contact-icon inverted" %>
+          </a>
+          <p class="contact-label">Resume</p>
+        </div>
+        <div class="contact-item">
+          <a href="#projects" target="_blank">
+            <%= image_tag "layers.png", alt: "Projects", class: "contact-icon inverted" %>
+          </a>
+          <p class="contact-label">Projects</p>
+        </div>
+      </div>
+      <%= render "down_arrow"%>
+    </div>
+</div>

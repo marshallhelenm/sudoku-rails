@@ -1,3 +1,6 @@
+<% content_for :page_styles do %>
+  <%= stylesheet_link_tag 'sudoku', media: 'all' %>
+<% end %>
 <div class="puzzler-outer" data-controller="game" data-game-difficulty-value="<%= @difficulty %>" data-action="keyup@window->game#handleKeyUp">
     <%= turbo_stream_from(:cell_squares) %>
     <%= turbo_stream_from(:game_board) %>
@@ -22,7 +25,6 @@
             </div>
             <button type="button" data-action="click->game#newPuzzle" class="puzzler-btn puzzler-btn-warning">New Puzzle</button>
             <button type="button" data-action="click->game#clearPuzzle" class="puzzler-btn puzzler-btn-warning">Clear Puzzle</button>
-            <%# <button type="button" data-action="click->game#generatePuzzles" class="puzzler-btn puzzler-btn-warning">Generate Puzzle</button> %>
         </div>
     </div>
 </div>

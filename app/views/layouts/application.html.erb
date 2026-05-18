@@ -17,10 +17,26 @@
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
+    <%= stylesheet_link_tag "fullpage", media: "all" %>
+
+    <!-- jQuery (required for fullpage.js v2.7.2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- fullpage.js -->
+    <%= javascript_include_tag "jquery.fullPage" %>
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= yield :page_styles %>
     <%= javascript_importmap_tags %>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        if (window.jQuery && $("#fullpage").length) {
+          $("#fullpage").fullpage({
+            anchors: ["name_card", "projects", "credits"],
+          });
+        }
+      });
+    </script>
   </head>
 
   <body>
