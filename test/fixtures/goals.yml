@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  target_amount: 1.5
+  total_saved: 1.5
+  daily_earnings_cap: 1.5
+
+two:
+  target_amount: 1.5
+  total_saved: 1.5
+  daily_earnings_cap: 1.5

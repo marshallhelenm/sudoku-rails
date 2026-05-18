@@ -1,0 +1,10 @@
+one:
+  user: one
+  provider: oauth2
+  uid: external-user-1
+  access_token: token-1
+  refresh_token: refresh-1
+  expires_at: 2027-01-01 00:00:00
+  raw_profile:
+    email: person@example.com
+    name: Example Person

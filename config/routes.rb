@@ -16,6 +16,12 @@ Rails.application.routes.draw do
   end
 
   namespace :habit_saver do
-    get "habit_saver" => "app#home"
+    root to: "app#dashboard"
+    get "login" => "app#login_page"
+    post "signup" => "auth#signup", as: :signup
+    post "session" => "auth#login", as: :session
+    delete "logout" => "auth#logout", as: :logout
+    resources :goals, only: [:create]
+    resources :habits, only: [:create]
   end
 end

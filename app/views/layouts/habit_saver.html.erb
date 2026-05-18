@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Habit Saver" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Habit Saver">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= action_cable_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "habit_saver_layout", "data-turbo-track": "reload" %>
+    <%= yield :page_styles %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="habit-saver-shell">
+    <header class="habit-saver-shell__header">
+      <%= link_to "Habit Saver", habit_saver_root_path, class: "habit-saver-shell__brand" %>
+
+      <nav class="habit-saver-shell__nav" aria-label="Habit Saver navigation">
+        <% if session[:habit_saver_session_token].present? %>
+          <%= button_to "Log Out", habit_saver_logout_path, method: :delete, class: "habit-saver-shell__logout" %>
+        <% else %>
+          <%= link_to "Log In", habit_saver_login_path, class: "habit-saver-shell__link" %>
+        <% end %>
+      </nav>
+    </header>
+
+    <main class="habit-saver-shell__content">
+      <%= yield %>
+    </main>
+  </body>
+</html>

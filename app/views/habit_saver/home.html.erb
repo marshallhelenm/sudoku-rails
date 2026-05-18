@@ -1,0 +1,10 @@
+<section class="habit-saver-home">
+  <h1>Habit Saver</h1>
+  <p>You are logged in with your Habit Saver account.</p>
+
+  <% if @habit_saver_user.present? %>
+    <p>Signed in as: <strong><%= @habit_saver_user.display_name.presence || @habit_saver_user.email %></strong></p>
+  <% end %>
+
+  <%= button_to "Log out", habit_saver_logout_path, method: :delete %>
+</section>

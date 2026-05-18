@@ -1,0 +1,52 @@
+<% content_for :title, "Habit Saver Login" %>
+
+<% content_for :page_styles do %>
+	<%= stylesheet_link_tag "habit_saver_auth", "data-turbo-track": "reload" %>
+<% end %>
+
+<main class="habit-saver-auth-page habit-saver-auth-page--in-layout">
+	<section class="habit-saver-phone" aria-label="Habit Saver authentication">
+		<div class="habit-saver-phone__status">Habit Saver</div>
+
+		<div class="habit-saver-phone__content">
+			<span class="habit-saver-badge">Mobile Auth</span>
+
+			<h1 class="habit-saver-phone__title">Build streaks, not stress.</h1>
+			<p class="habit-saver-phone__subtitle">
+				Use your email to log in or create your Habit Saver account.
+			</p>
+
+			<% if flash[:notice].present? %>
+				<p class="habit-saver-flash habit-saver-flash--notice"><%= flash[:notice] %></p>
+			<% end %>
+
+			<% if flash[:alert].present? %>
+				<p class="habit-saver-flash habit-saver-flash--alert"><%= flash[:alert] %></p>
+			<% end %>
+
+			<div class="habit-saver-auth-panels">
+				<section class="habit-saver-auth-card" aria-label="Log in form">
+					<h2 class="habit-saver-auth-card__title">Log In</h2>
+					<%= form_with url: habit_saver_session_path, scope: :session, local: true, class: "habit-saver-form" do |f| %>
+						<%= f.email_field :email, required: true, placeholder: "Email", autocomplete: "email", class: "habit-saver-input" %>
+						<%= f.password_field :password, required: true, placeholder: "Password", autocomplete: "current-password", class: "habit-saver-input" %>
+						<%= f.submit "Log In", class: "habit-saver-btn habit-saver-btn--primary" %>
+					<% end %>
+				</section>
+
+				<section class="habit-saver-auth-card" aria-label="Sign up form">
+					<h2 class="habit-saver-auth-card__title">Sign Up</h2>
+					<%= form_with model: (@signup_user || HabitSaver::User.new), url: habit_saver_signup_path, local: true, class: "habit-saver-form" do |f| %>
+						<%= f.text_field :display_name, placeholder: "Display name (optional)", autocomplete: "name", class: "habit-saver-input" %>
+						<%= f.email_field :email, required: true, placeholder: "Email", autocomplete: "email", class: "habit-saver-input" %>
+						<%= f.password_field :password, required: true, minlength: 8, placeholder: "Password (min 8 chars)", autocomplete: "new-password", class: "habit-saver-input" %>
+						<%= f.password_field :password_confirmation, required: true, minlength: 8, placeholder: "Confirm password", autocomplete: "new-password", class: "habit-saver-input" %>
+						<%= f.submit "Create Account", class: "habit-saver-btn habit-saver-btn--secondary" %>
+					<% end %>
+				</section>
+			</div>
+
+			<p class="habit-saver-footnote">No third-party login required.</p>
+		</div>
+	</section>
+</main>

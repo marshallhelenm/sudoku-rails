@@ -42,8 +42,7 @@ class Sudoku::PuzzleGenerator
 
     # Generate n puzzles and return them as Puzzle objects with all metadata (cells, options, groups, etc) intact.
     def generate_puzzles(n, difficulty: "medium")
-        byebug
-        @difficulty = difficulty.to_s
+        @difficulty = difficulty
         puts "Generating #{n} #{@difficulty} puzzles..."
         puts "******************************************"
         puts ""
@@ -62,7 +61,6 @@ class Sudoku::PuzzleGenerator
             end
             attempts += 1
         end
-        byebug
         print_counts
         puts "#{@created_puzzles_count} Puzzles created!"
         @puzzles

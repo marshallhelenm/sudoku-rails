@@ -1,0 +1,46 @@
+.habit-saver-shell {
+  margin: 0;
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.habit-saver-shell__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.habit-saver-shell__brand {
+  color: #0f172a;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+.habit-saver-shell__nav {
+  display: flex;
+  align-items: center;
+}
+
+.habit-saver-shell__link,
+.habit-saver-shell__logout {
+  border: 0;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.habit-saver-shell__content {
+  min-height: calc(100vh - 56px);
+}

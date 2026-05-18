@@ -1,0 +1,80 @@
+<% content_for :page_styles do %>
+	<%= stylesheet_link_tag "habit_saver_auth", "data-turbo-track": "reload" %>
+<% end %>
+
+<main class="habit-saver-auth-page">
+	<section class="habit-saver-phone" aria-label="Habit Saver dashboard">
+		<div class="habit-saver-phone__status">Habit Saver</div>
+
+		<div class="habit-saver-phone__content">
+			<h1 class="habit-saver-phone__title">Dashboard</h1>
+			<p class="habit-saver-dashboard__welcome">
+				Welcome, <strong><%= @habit_saver_user.display_name.presence || @habit_saver_user.email %></strong>!
+			</p>
+
+			<% if flash[:notice].present? %>
+				<p class="habit-saver-flash habit-saver-flash--notice"><%= flash[:notice] %></p>
+			<% end %>
+
+			<% if flash[:alert].present? %>
+				<p class="habit-saver-flash habit-saver-flash--alert"><%= flash[:alert] %></p>
+			<% end %>
+
+			<div class="habit-saver-dashboard__section">
+				<div class="habit-saver-dashboard__section-header">
+					<h2>Goals</h2>
+				</div>
+
+				<%= form_with model: @goal, url: habit_saver_goals_path, scope: :goal, local: true, class: "habit-saver-form habit-saver-dashboard__form" do |f| %>
+					<%= f.text_field :name, placeholder: "Goal name", class: "habit-saver-input" %>
+					<%= f.number_field :target_amount, required: true, min: 0.01, step: 0.01, placeholder: "Target amount", class: "habit-saver-input" %>
+					<%= f.number_field :daily_earnings_cap, required: true, min: 0.01, step: 0.01, placeholder: "Daily earnings cap", class: "habit-saver-input" %>
+					<%= f.submit "Add Goal", class: "habit-saver-btn habit-saver-btn--secondary habit-saver-btn--small" %>
+				<% end %>
+
+				<% if @goals.present? %>
+					<ul class="habit-saver-dashboard__list">
+						<% @goals.each do |goal| %>
+							<li class="habit-saver-dashboard__item">
+								<div class="habit-saver-dashboard__item-title"><%= goal.name%></div>
+								<div>Target: $<%= format("%.2f", goal.target_amount.to_f) %></div>
+								<div>Daily cap: $<%= format("%.2f", goal.daily_earnings_cap.to_f) %></div>
+								<div>Saved: $<%= format("%.2f", goal.total_saved.to_f) %></div>
+							</li>
+						<% end %>
+					</ul>
+				<% else %>
+					<div class="habit-saver-dashboard__empty">No goals yet.</div>
+				<% end %>
+			</div>
+
+			<div class="habit-saver-dashboard__section">
+				<div class="habit-saver-dashboard__section-header">
+					<h2>Habits</h2>
+				</div>
+
+				<%= form_with model: @habit, url: habit_saver_habits_path, scope: :habit, local: true, class: "habit-saver-form habit-saver-dashboard__form" do |f| %>
+					<%= f.text_field :name, required: true, placeholder: "Habit name", class: "habit-saver-input" %>
+					<%= f.number_field :target_per_unit, required: true, min: 1, step: 1, placeholder: "Target per unit", class: "habit-saver-input" %>
+					<%= f.select :time_unit, options_for_select([["Day", "day"], ["Week", "week"], ["Month", "month"]], @habit.time_unit.presence || "day"), {}, class: "habit-saver-input" %>
+					<%= f.submit "Add Habit", class: "habit-saver-btn habit-saver-btn--secondary habit-saver-btn--small" %>
+				<% end %>
+
+				<% if @habits.present? %>
+					<ul class="habit-saver-dashboard__list">
+						<% @habits.each do |habit| %>
+							<li class="habit-saver-dashboard__item">
+								<div class="habit-saver-dashboard__item-title"><%= habit.name.presence || "(Unnamed Habit)" %></div>
+								<div>Target: <%= habit.target_per_unit %> per <%= habit.time_unit %></div>
+								<div>Current streak: <%= habit.current_streak %></div>
+								<div>Record streak: <%= habit.streak_record %></div>
+							</li>
+						<% end %>
+					</ul>
+				<% else %>
+					<div class="habit-saver-dashboard__empty">No habits yet.</div>
+				<% end %>
+			</div>
+		</div>
+	</section>
+</main>
