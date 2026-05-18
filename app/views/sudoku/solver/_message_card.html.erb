@@ -1,0 +1,10 @@
+<% message_type ||= nil %>
+<% message_text ||= nil %>
+<%= turbo_frame_tag "message_card", data: {sudoku__game_target: "messageCard"} do %>
+    <% if message_type.present? %>
+        <div class="message-container message-<%= message_type %>">
+            <button class="message-close" aria-label="Close" data-action="click->sudoku--game#closeResultCard">&times;</button>
+            <h2 class="message-title"><%= message_text %></h2>
+        </div>
+    <% end %>
+<% end %>

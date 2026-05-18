@@ -9,7 +9,7 @@ namespace :puzzles do
     puts "Should we display the generation process in the console? (y/n)"
     display_process = STDIN.gets.chomp.downcase == "y"
     puts "Generating JSON puzzles..."
-    generator = PuzzleGenerator.new(print: display_process)
+    generator = Sudoku::PuzzleGenerator.new(print_progress: display_process)
     generator.generate_puzzles_to_json(num_puzzles, difficulty: difficulty)
     puts "JSON puzzles generated and saved to app/assets/puzzle_matrices.json"
   end
