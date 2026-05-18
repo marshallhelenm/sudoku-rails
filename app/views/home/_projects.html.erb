@@ -1,6 +1,6 @@
 <div class="section grey-knit-bg" data-anchor="projects">
     <div class="grey-bg block">
-      <%= render "up_arrow" %>
+      <%= render "up_arrow", target: "name_card" %>
       <h1 style="color: white; position: absolute; top: 20px; font-size: 3em;">Hobby Projects</h1>
       <div class="projects-container">
         <%= render "project_card", project: {
@@ -18,6 +18,6 @@
           live_link: "https://memetic-app-d0ed892a999c.herokuapp.com/"
         } %>
       </div>
-      <%= render "down_arrow" %>
+      <%= render "down_arrow", target: "credits" %>
     </div>
 </div>

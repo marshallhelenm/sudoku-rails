@@ -4,30 +4,28 @@
       <h3 class="subheading">Full Stack Developer</h3>
       <div class="contact-icons">
         <div class="contact-item">
-            <%= link_to "https://www.linkedin.com/in/marshallhelenm/", target: "_blank" do %>
+            <%= link_to "https://www.linkedin.com/in/marshallhelenm/", target: "blank" do %>
             <%= image_tag "linkedin-ico.png", alt: "LinkedIn", class: "contact-icon" %>
             <% end %>
             <p class="contact-label">LinkedIn</p>
         </div>
         <div class="contact-item">
-          <%= link_to "https://github.com/marshallhelenm/", target: "_blank" do %>
+          <%= link_to "https://github.com/marshallhelenm/", target: "blank" do %>
             <%= image_tag "github-ico.png", alt: "GitHub", class: "contact-icon" %>
           <% end %>
           <p class="contact-label">GitHub</p>
         </div>
         <div class="contact-item">
-          <a href="#resume" target="_blank">
+          <a href="https://drive.google.com/file/d/1wJ83wTSvM6OBplNElO3y1juqq9A3mRst/view?usp=sharing" target="blank">
             <%= image_tag "resume.png", alt: "Resume", class: "contact-icon inverted" %>
           </a>
           <p class="contact-label">Resume</p>
         </div>
-        <div class="contact-item">
-          <a href="#projects" target="_blank">
-            <%= image_tag "layers.png", alt: "Projects", class: "contact-icon inverted" %>
-          </a>
+        <div class="contact-item section-nav-link" data-target="projects" style="cursor: pointer;">
+          <%= image_tag "layers.png", alt: "Projects", class: "contact-icon inverted" %>
           <p class="contact-label">Projects</p>
         </div>
       </div>
-      <%= render "down_arrow"%>
+      <%= render "down_arrow", target: "projects" %>
     </div>
 </div>

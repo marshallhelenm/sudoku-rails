@@ -28,15 +28,6 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= yield :page_styles %>
     <%= javascript_importmap_tags %>
-    <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        if (window.jQuery && $("#fullpage").length) {
-          $("#fullpage").fullpage({
-            anchors: ["name_card", "projects", "credits"],
-          });
-        }
-      });
-    </script>
   </head>
 
   <body>
