@@ -1,0 +1,3 @@
+<% @projects.each_with_index do |project, index| %>
+  <%= render "project_slide", project: project, first: index == 0, last: index == @projects.length - 1 %>
+<% end %>

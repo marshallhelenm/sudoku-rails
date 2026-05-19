@@ -1,80 +1,135 @@
+# Sudoku-a Monorepo
 
-# Sudoku-a
+This Rails repository currently holds three projects in one app:
 
-A web-based Sudoku puzzle application built with Ruby on Rails. This project began with the desire to code a program that would solve Sudoku puzzles, not necessarily in the most efficient way, but in a way that models a human-like approach to the puzzle.
+1. Portfolio pages
+2. Sudoku hobby project
+3. Habit Saver hobby project
 
-## Features
+## App Areas
 
-- Play Sudoku puzzles of varying difficulty
-- Solve puzzles automatically
-- Interactive game board with Turbo/Stimulus for SPA-like experience
-- Puzzle logic and validation in Ruby
-- JSON-based puzzle storage
+### Portfolio
 
-## Getting Started
+- Purpose: personal portfolio/home content
+- Routes:
+  - / (root)
+  - /portfolio
 
-### Prerequisites
+- To Do:
+  - Add about section
+  - Add picture of me
+  - Make mobile-friendly version
 
-- Ruby (compatible with Rails 8.1.3)
+### Sudoku hobby project
+
+- Purpose: playable and solvable Sudoku experience
+- Routes:
+  - /sudoku
+- Features:
+  - Puzzle generation and solving
+  - Interactive UI with Turbo/Stimulus-style updates
+  - JSON puzzle data source
+
+- To DO:
+	- integrate youdosudoku api for solvable puzzles
+  - Add panel with description of functionality
+  - Improve puzzle generator efficiency
+
+### Habit Saver hobby project
+
+- Purpose: habit tracking and savings-oriented workflow
+- Routes:
+  - /habit_saver (authenticated area)
+  - /habit_saver/login
+- Auth:
+  - First-party email/password sign in and sign up flow
+  - Persisted users and auth sessions
+
+- To Do:
+	- lots, this one's still in dev.
+
+## Prerequisites
+
+- Ruby compatible with Rails 8.1.3
 - Bundler
-- Node.js (for asset pipeline, if needed)
-- SQLite3 (default database)
+- PostgreSQL
+- Node.js (optional, for frontend tooling if needed)
 
-### Installation
+## Local Setup
 
-1. Clone the repository:
-	```sh
-	git clone <repo-url>
-	cd sudoku-a
-	```
+1. Clone and install gems:
 
-2. Install dependencies:
-	```sh
-	bundle install
-	```
+```sh
+git clone <repo-url>
+cd sudoku-a
+bundle install
+```
 
-3. Set up the database:
-	```sh
-	rails db:setup
-	```
+1. Setup database:
 
-4. (Optional) Generate new puzzles:
-	```sh
-	rake puzzles:generate_json
-	```
+```sh
+bin/rails db:setup
+```
 
-5. Start the server:
-	```sh
-	rails s
-	```
+1. Optional Sudoku puzzle regeneration:
 
-6. Visit `http://localhost:3000/sudoku/solver` in your browser.
+```sh
+rake puzzles:generate_json
+```
 
-## Project Structure
+1. Start server:
 
-- `app/models/` — Core puzzle logic (`sudoku.rb`, `puzzle.rb`, `puzzle_solver.rb`, etc.)
-- `app/controllers/` — Main controller: `sudoku_controller.rb`
-- `app/views/sudoku/` — Game board and UI partials
-- `app/assets/puzzle_matrices.json` — JSON file with puzzle data
-- `Gemfile` — Rails, Turbo, Stimulus, and other dependencies
+```sh
+bin/rails s
+```
 
-## Usage
+1. Visit:
 
-- Play Sudoku puzzles in your browser.
-- Generate new puzzles or solve existing ones.
-- The game board is interactive and updates via Turbo Streams.
+- Portfolio: <http://localhost:3000/>
+- Sudoku: <http://localhost:3000/sudoku>
+- Habit Saver Login: <http://localhost:3000/habit_saver/login>
+
+## Habit Saver Authentication Setup
+
+Habit Saver now uses first-party email/password authentication and does not require any third-party OAuth provider.
+
+### Steps
+
+1. Run migrations to ensure auth columns exist:
+
+```sh
+bin/rails db:migrate
+```
+
+1. Open Habit Saver login page:
+
+<http://localhost:3000/habit_saver/login>
+
+1. Create an account with email + password in the Sign Up form.
+
+1. Use the Log In form for subsequent sign-ins.
+
+### Notes
+
+- Passwords are stored securely via bcrypt (`has_secure_password`).
+- Sessions are persisted in `habit_saver_auth_sessions`.
+- No external identity provider is needed.
 
 ## Testing
 
-Run the test suite with:
+Run all tests:
+
 ```sh
-rails test
+bin/rails test
+```
+
+Run a focused Habit Saver auth test:
+
+```sh
+bin/rails test test/models/habit_saver/auth_session_test.rb
 ```
 
 ## Deployment
 
-- Dockerfile included for containerized deployment.
-- See `config/deploy.yml` for deployment configuration.
-
-<img width="799" height="690" alt="Screenshot 2026-05-11 at 9 13 05 PM" src="https://github.com/user-attachments/assets/90ed4292-603b-4f19-9beb-eaff885d83d9" />
-
+- Dockerfile is included for containerized deployment.
+- See config/deploy.yml for deployment configuration.

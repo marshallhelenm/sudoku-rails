@@ -4,5 +4,8 @@
     "block",
     "blocks",
     "optionless"
+  ],
+  "cSpell.ignoreWords": [
+    "eldev"
   ]
 }
