@@ -17,13 +17,13 @@
 #   options_matrix, options_array                - Get options as matrix/array
 #   siblings_of(cell)                            - Get all siblings of a cell
 
-require_relative "sudoku"
+require_relative "../sudoku"
 
 class Sudoku::Puzzle
     require "matrix"
     require "set"
     require "sqids"
-    require_relative "sudoku"
+    require_relative "../sudoku"
     require_relative "cell"
     require_relative "group"
     require_relative "row"

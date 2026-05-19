@@ -1,5 +1,5 @@
-class ApplicationRecord < ActiveRecord::Base
-  primary_abstract_class
-  require "json"
-  require "matrix"
+module Sudoku
+  class ApplicationRecord < ActiveRecord::Base
+    primary_abstract_class
+  end
 end

@@ -11,7 +11,7 @@
 #
 # Provides validation for all attributes and utility methods for Sudoku logic.
 require "sqids"
-require_relative "sudoku"
+require_relative "../sudoku"
 require_relative "sudoku_cache"
 
 class Sudoku::Cell

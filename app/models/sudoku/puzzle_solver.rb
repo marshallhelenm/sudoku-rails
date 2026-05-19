@@ -1,7 +1,7 @@
-require_relative "sudoku"
+require_relative "../sudoku"
 
 class Sudoku::PuzzleSolver
-    require_relative "sudoku"
+    require_relative "../sudoku"
 
     # Initializes the PuzzleSolver with a puzzle instance.
     # @param puzzle [Sudoku::Puzzle] the puzzle to solve

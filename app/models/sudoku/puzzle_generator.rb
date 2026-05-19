@@ -1,4 +1,4 @@
-require_relative "sudoku"
+require_relative "../sudoku"
 require "matrix"
 require_relative "../../helpers/sudoku_helper"
 

@@ -1,4 +1,4 @@
-require_relative "sudoku"
+require_relative "../sudoku"
 
 class Sudoku::SudokuCache
   attr_reader :cache

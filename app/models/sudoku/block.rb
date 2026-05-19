@@ -14,7 +14,7 @@
 #   values                 - Returns the values of all cells in this block
 #   print_values           - Prints the values in block format
 
-require_relative "sudoku"
+require_relative "../sudoku"
 require_relative "group"
 require_relative "cell"
 

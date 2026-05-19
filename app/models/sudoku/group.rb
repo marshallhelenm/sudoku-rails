@@ -1,7 +1,7 @@
 # Group represents a collection of Cell objects (row, column, or block) in a Sudoku puzzle.
 # Provides validation and utility methods for group logic.
 
-require_relative "sudoku"
+require_relative "../sudoku"
 
 class Sudoku::Group
     require_relative "puzzle"
