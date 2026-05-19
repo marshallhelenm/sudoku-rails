@@ -24,20 +24,25 @@ class Sudoku::PuzzleGenerator
     attr_accessor :failed_completion_count
     attr_accessor :failed_reduction_count
 
-    # Generate n puzzles and save them to a JSON file as arrays of arrays of values (no options or other metadata). This is used to generate the puzzle_matrices.json file that the frontend uses to display puzzles.
-    def generate_puzzles_to_json(n, difficulty: "medium")
-        @difficulty = difficulty
-        puzzles = generate_puzzles(n, difficulty: difficulty)
+
+    def write_puzzles_to_json
         data = {
-            "easy" => puzzles["easy"]&.map { |p| p.values_array },
-            "medium" => puzzles["medium"]&.map { |p| p.values_array },
-            "hard" => puzzles["hard"]&.map { |p| p.values_array }
+            "easy" => @puzzles["easy"]&.map { |p| p.values_array },
+            "medium" => @puzzles["medium"]&.map { |p| p.values_array },
+            "hard" => @puzzles["hard"]&.map { |p| p.values_array }
         }
         json_data = JSON.generate(data)
         file_path = Rails.root.join("app/assets/puzzle_matrices.json")
         File.open(file_path, "w") do |file|
             file.write(json_data)
         end
+    end
+
+    # Generate n puzzles and save them to a JSON file as arrays of arrays of values (no options or other metadata). This is used to generate the puzzle_matrices.json file that the frontend uses to display puzzles.
+    def generate_puzzles_to_json(n, difficulty: "medium")
+        @difficulty = difficulty
+        generate_puzzles(n, difficulty: difficulty)
+        write_puzzles_to_json
     end
 
     # Generate n puzzles and return them as Puzzle objects with all metadata (cells, options, groups, etc) intact.
@@ -73,7 +78,7 @@ class Sudoku::PuzzleGenerator
         # start by generating a completed puzzle
         completed_puzzle = generate_completed_puzzle
         return false unless completed_puzzle
-
+        reduced_puzzle = nil
         # then try to reduce it to a puzzle with a unique solution and the target number of confirmed values based on the difficulty level. If we fail to reduce it, start over with a new completed puzzle.
         num_confirmed_values =
             case @difficulty
@@ -86,7 +91,11 @@ class Sudoku::PuzzleGenerator
             else
                 30
             end
-        reduced_puzzle = reduce_puzzle(completed_puzzle, num_confirmed_values)
+        5.times do
+            reduced_puzzle = reduce_puzzle(completed_puzzle, num_confirmed_values)
+            break if reduced_puzzle
+        end
+        write_puzzles_to_json if reduced_puzzle
         reduced_puzzle
     end
 

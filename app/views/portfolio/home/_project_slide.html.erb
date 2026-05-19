@@ -1,0 +1,19 @@
+<%# locals: (project:, first:, last:) %>
+<div class="grey-bg block slide project-slide">
+  <%= render "up_arrow", target: "name_card" %>
+  <div class="section-nav-link project-slide-caret project-slide-caret-left" data-slide-direction="left" role="button" aria-label="Previous project">
+    <% unless first %>
+      <%= image_tag "caret-left.png", alt: "Previous project", class: "contact-icon side-caret" %>
+    <% end %>
+  </div>
+  <div class="project-slide-content">
+    <h1 class="projects-title">Hobby Projects</h1>
+    <%= render "project_card", project: project %>
+  </div>
+  <div class="section-nav-link project-slide-caret project-slide-caret-right" data-slide-direction="right" role="button" aria-label="Next project">
+    <% unless last %>
+      <%= image_tag "caret-right.png", alt: "Next project", class: "contact-icon side-caret" %>
+    <% end %>
+  </div>
+  <%= render "down_arrow", target: "credits" %>
+</div>

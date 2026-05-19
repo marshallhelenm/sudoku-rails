@@ -1,0 +1,10 @@
+<div class="grey-bg block">
+  <%= render "up_arrow", target: "name_card" %>
+  <h1 style="color: white; position: absolute; top: 20px; font-size: 3em;">Hobby Projects</h1>
+  <div class="projects-container">
+    <% @projects.each do |project| %>
+      <%= render "project_card", project: project %>
+    <% end %>
+  </div>
+  <%= render "down_arrow", target: "credits" %>
+</div>
