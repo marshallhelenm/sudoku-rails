@@ -1,6 +1,24 @@
 <div class="section grey-knit-bg" data-anchor="projects">
-  <%= render "desktop_projects" %>
-  <div class="mobile-projects-wrapper">
-    <%= render "mobile_projects" %>
+
+  <div class="grey-bg block desktop-projects">
+    <%= render "up_arrow", target: "name_card" %>
+    <h1 style="color: white; position: absolute; top: 20px; font-size: 3em;">Hobby Projects</h1>
+    <div class="projects-container">
+      <% @projects.each do |project| %>
+        <%= render "project_card", project: project %>
+      <% end %>
+    </div>
+    <%= render "down_arrow", target: "credits" %>
   </div>
+
+    <!-- Mobile version -->
+  <div class="grey-bg block mobile-projects">
+    <h1 class="projects-title" style="margin-top: 1em; color: white; text-align: center;">Hobby Projects</h1>
+    <div class="projects-container">
+      <% @projects.each do |project| %>
+        <%= render "project_card", project: project %>
+      <% end %>
+    </div>
+  </div>
+
 </div>
